@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="stericson.busybox.donate"
+      android:versionName="7.1" android:versionCode="103">
+            
+    <application android:icon="@drawable/icon" android:label="BusyBox Pro" >
+        
+		<activity android:name=".Activity.BusyBoxActivity"
+		          android:label="BusyBox Pro" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:launchMode="singleTop">
+		    <intent-filter>
+		        <action android:name="android.intent.action.MAIN" />
+		        <category android:name="android.intent.category.LAUNCHER" />
+		    </intent-filter>
+		</activity>
+
+   		<activity android:name=".Activity.TuneActivity"
+		          android:label="BusyBox Pro" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:launchMode="singleTop">
+		</activity>
+		    
+		<activity android:name=".Activity.InstallActivity"
+		          android:label="BusyBox Pro" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:launchMode="singleTop">
+		</activity>
+
+		<activity android:name=".Activity.UninstallActivity"
+		          android:label="BusyBox Pro" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:launchMode="singleTop">
+		</activity>
+		    		   
+		<activity android:name=".Activity.PathActivity"
+		          android:label="BusyBox Pro" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:launchMode="singleTop">
+		</activity>
+     
+	</application>
+        
+	<uses-sdk android:minSdkVersion="3" android:targetSdkVersion="11"/>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+
+    <supports-screens
+          android:largeScreens="true"
+          android:normalScreens="true"
+          android:smallScreens="true"
+          android:anyDensity="true" />
+</manifest> 

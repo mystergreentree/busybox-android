@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">BusyBox installer Pro</string>
+    <string name="version">v7.1</string>
+    <string name="noroot">Your phone is not rooted! \n\n This application will not work without root.</string>
+    <string name="noroot2">The "su" binary was not found on your phone. This application will not work without root.</string>
+    <string name="initializing">Initializing, please wait...</string>
+    <string name="pleaseWait">Please Wait</string>
+    <string name="done">Done!</string>
+    <string name="failed">It looks like the installation of BusyBox was not successful.</string>
+    <string name="sdcard">Failure! There is either not enough space on your SDcard or your SDcard is mounted! \n\n Check that your SDcard is not mounted and that you have at least 1.6mb of free space available then try again.</string>
+    <string name="status">Status: </string>
+    <string name="waiting">Waiting...</string>
+    <string name="lookingbusybox">Looking for BusyBox...</string>
+    <string name="lookingroot">Looking for Root...</string>
+    <string name="foundit">BusyBox was found: </string>
+    <string name="notfound">BusyBox is not currently installed on your device.</string>
+    <string name="rootfound">Phone is rooted.</string>
+    <string name="accessUndetermined">We could not determine whether or not we have root access. This application will NOT work if we do not have root access!</string>
+    <string name="noAccess">BusyBox Installer was not allowed root access! \n\n This may be an issue with Superuser, open Superuser and make sure that you are allowing us root access. \n\n This application will not work without root access.</string>
+    <string name="busyboxversion">Current BusyBox version: </string>
+    <string name="busyboxversiondone">The latest BusyBox version is already installed! </string>
+    <string name="failedresponse">The application failed, either because your device is not nand unlocked or we were unable to remount. Please use logcat at this time, get it from the market, to send a log to StericDroid@gmail.com </string>
+    <string name="mounted">is currently mounted as RW.</string>
+    <string name="failedmount">could not be mounted as RW, the install may fail.</string>
+    <string name="pleaseMount">Before hitting the install button, please make sure you have remounted the /system partition of your phone to RW Access. Do not continue until after you complete this.</string>
+    <string name="morethanone">More then one copy of BusyBox was found.</string>
+    <string name="amount">Free space in </string>
+    <string name="toolow">Not enough space to install busybox, we need at least 1600kb free \n\n Try removing some things to free up some space or try a different installation path.</string>
+    <string name="select">Select where you want to install BusyBox \n All other copies of BusyBox will be removed.</string>
+
+    <string name="whatisthis">This feature will allow you to see all of the applets that are included with my versions of Busybox from 1.18.5 on up. \n\n
+        						This feature will also allow you to check each applet, find out if it is installed, where it is installed, and the usage for the applet if it is installed. \n\n
+        						If you have an application which needs a specific applet and it is NOT here, please email me at StericDroid@gmail.com with the applet name and I will get it included ASAP.</string>
+   	<string name="foundhere">Found at: </string>
+   	
+    <!-- Before Install -->
+    <string name="beforeInstall">Before hitting the install button please consider that this application will attempt to install BusyBox on your device, this will be successful if and only if your device meets all of the requirements.
+								\n\n  The requirements of this application are as follows: \n\n
+								A fully rooted device (Important) \n
+								A fully nand unlocked device (Important) \n
+								A rom that supports upgrading BusyBox (Important) \n
+								At least 1600kb free in your chosen installation path. (Important)
+								
+								\n\n If the install fails from this point on, please verify that all of these requirements have been met and that your ROM supports this application. \n\n
+								If this install does fail, and all of these requirements have been met, please send me the log (look for logcat in the market) by emailing it to me at StericDroid@gmail.com. I will review your email and if I see something that needs to be corrected I will do so. \n\n </string>
+    <string name="installing">Installing Busybox... \n\n</string>
+
+    <!-- AFTER INSTALL -->
+    <string name="installedsame">The version of BusyBox installed now is the same as the version of BusyBox installed before the installation. \n\n
+								If this was so desired, then ignore this, otherwise try choosing a different installation path and making sure your phone and ROM meets all of the requirements mentioned before.</string>
+    <string name="installedunique">It looks like the installation of BusyBox was successful! Congratulations! \n\n
+									Keep in mind that by keeping this installed you will be notified whenever a new version of BusyBox is ready to be installed.</string>
+    <string name="installedunique_noroot">It looks like the installation of BusyBox was successful! Congratulations! \n\n
+									Keep in mind that by keeping this installed you will be notified whenever a new version of BusyBox is ready to be installed. \n\n
+									Also keep in mind that since root access was not provided I cannot guarantee that Busybox will work correctly.</string>
+    <string name="installedmultiple">It looks like you have BusyBox installed, but there are multiple copies still installed. \n\n
+									This means that something may have gone wrong in the installation process. Please verify on your end that everything is correctly installed and working.</string>
+    <string name="installedsomethingelse">It looks like BusyBox is installed, but It does not appear to be the version that you selected to have installed, you may want to try the installation again but this time using a different installation location.</string>
+
+    <!-- First View -->
+    <string name="choose">Choose which version of Busybox you would like to install. \n</string>
+    <string name="choosePath">Choose where you would like to install Busybox. \n</string>
+    <string name="ok">Ok</string>
+    <string name="summary">Summary</string>
+    <string name="install">Install</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="Results">Results</string>
+    <string name="customTune">Custom Tune</string>
+    <string name="utilProblem">There seems to be a problem with some of the utilities needed to install Busybox. \n\n
+	    						Sadly, I cannot fix this problem and this installer probably will not work. \n\n
+	    						You can try to install Busybox regardless, but it will probably fail. In order to fix this you will probably need to reflash your ROM.</string>
+
+    <!-- Tune View -->
+    <string name="chooseSymlinks">Applets that are not checked will not be symlinked. \n
+									(This is an advanced option)</string>
+    <string name="notFound">Applet is not currently symlinked/installed.</string>
+    <string name="found">Applet is currently symlinked/installed.</string>
+    <string name="cautionDoNot">Recommend NOT overwriting/installing this applet.</string>
+    <string name="cautionDo">Recommend overwriting/installing this applet.</string>
+    <string name="willSymlink">(Will symlink/overwrite/install)</string>
+    <string name="willNotSymlink">(Will not symlink/overwrite/install)</string>
+    <string name="symlinkedTo">Symlinked to:</string>
+    <string name="notsymlinked">Not Symlinked</string>
+    <string name="gathering">Gathering Information...</string>
+    <string name="gatheringAbout">Gathering Information... \n\n processing:  </string>
+    <string name="noInfo">Information about this Applet could not be found.</string>
+    <string name="longPress">Long press an applet for more info on that applet.</string>
+    <string name="removeApplet">Will remove Applet/Symlink</string>
+    <string name="leaveApplet">Will leave Applet/Symlink</string>
+
+    <!-- Device Info -->
+    <string name="accessGiven">Root Access Granted.</string>
+    <string name="device">Device: </string>
+    <string name="firmware">Firmware Version: </string>
+    <string name="sdk">SDK Version: </string>
+    <string name="build">Build: </string>
+
+    <!-- CUSTOM TUNE -->
+    <string name="customtunewarn">Custom tune is an advanced feature! \n\n
+	    						If you are not an advanced user that understands what this does then you should NOT be using this feature. \n\n
+	    						If you are an advanced user, please make sure you review all applets listed here and choose the best option for each. 
+	    						While I do try to make some logical decisions for you, don\'t trust that all of these are set correctly. \n\n
+	    						Options checked here will overwrite ANY existing symlink, options unchecked will leave any existing symlink. \n\n
+	    						Please use this feature carefully!</string>
+    <!-- BEFORE UNINSTALL -->
+    <string name="beforeUninstall">Before hitting the uninstall button please consider that many root applications and custom roms require BusyBox to work, by uninstalling Busybox it could cause your rom and all of your root applications to stop working. \n\n
+	    
+	    						This is an advanced option, and you should know how to reflash a rom, or repair your device in the event that removing Busybox does cause some undesired effect. \n\n
+	    						
+	    						Keep in mind that this will remove ALL symlinks which point to Busybox, This is an advanced option! \n\n
+	    						
+	    						DO NOT DO THIS UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING! I WILL NOT ANSWER EMAILS REGARDING THIS FEATURE, YOU HAVE BEEN WARNED!!!</string>
+    <string name="uninstalling">Removing BusyBox... \n\n</string>
+
+    <!-- AFTER UNINSTALL -->
+    <string name="uninstallsuccess">It looks like the removal of BusyBox was successful! Congratulations!</string>
+    <string name="uninstallfailed">It looks like the removal of BusyBox failed, either because we could not do so in a safe manner or because of some other technical problem.</string>
+
+    <!-- About -->
+
+    <string name="about">BusyBox combines tiny versions of many common UNIX utilities into a single small executable. It provides replacements for most of the utilities you usually find in GNU fileutils, shellutils, etc. The utilities in BusyBox generally have fewer options than their full-featured GNU cousins; however, the options that are included provide the expected functionality and behave very much like their GNU counterparts. BusyBox provides a fairly complete environment for any small or embedded system.
+						\n\n
+						BusyBox has been written with size-optimization and limited resources in mind. It is also extremely modular so you can easily include or exclude commands (or features) at compile time. This makes it easy to customize your embedded systems. To create a working system, just add some device nodes in /dev, a few configuration files in /etc, and a Linux kernel.
+						\n\n
+						BusyBox is maintained by Denys Vlasenko, and licensed under the GNU GENERAL PUBLIC LICENSE version 2. ( http://busybox.net/license.html )
+						\n\n
+						You can find more information about BusyBox here: http://busybox.net
+						\n\n
+						To be clear, I (Stephen Erickson) Did not write BusyBox, I wrote the installer and I compile each version of BusyBox for Android and hand select which applets are needed for Android, based on request usually.
+						\n\n
+						If you need an applet added, please email me at StericDroid@gmail.com</string>
+
+    <!-- Welcome message -->
+    <string name="foreword">Just a quick note before continuing... 
+	
+							\n\n
+							This app will attempt to install BusyBox to your phone. Please notice that I said it will \"ATTEMPT\"
+							to install it. I emphasize this because there are many situational instances I cannot account for or deal with.
+							\n\n
+							
+							if the rom you are using has a version of BusyBox installed to /sbin, or any where else that gets reloaded upon reboot, then this app will NOT work. Tell your ROM maker to put BusyBox where it can be upgraded/removed. \n\n
+							You must have Nand unlocked to use this app and you must have RW access to your phone. \n\n
+							
+							Some roms wont like my version of BusyBox and might bootloop your device! Make a BACKUP BEFORE USING THIS! \n\n
+							
+							If there are applets or things missing that you want in your busybox email me and I will work to get them included! \n\n
+							
+							I try VERY VERY hard to make this work for everyone, sadly I don\'t have every phone available and I cant test on every rom, that said please dont down rate me in the market..
+							email me and I will try my best to help get it working, everyone can tell you I am quick to respond! \n\n</string>
+
+</resources>

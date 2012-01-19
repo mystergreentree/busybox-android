@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/container">
+    
+    <CheckBox
+        android:id="@+id/appletCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        />
+
+    <TextView 
+        android:id="@+id/appletState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/appletCheck"
+        android:textColor="#00ff00"
+        android:layout_marginTop="13dip"
+        android:layout_marginLeft="5dip"
+        android:textSize="15dip"/>
+
+    <CheckBox
+        android:id="@+id/appletDecision"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:layout_marginTop="-13dip"
+        android:layout_marginLeft="25dip"
+        android:textSize="13dip"
+        android:layout_below="@id/appletCheck"
+        />
+    
+    <TextView 
+        android:id="@+id/appletStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/appletDecision"
+        android:textColor="#ffffff"/>
+
+    <TextView 
+        android:id="@+id/appletSymlinkedTo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/appletStatus"
+        android:textColor="#00ff00"/>
+    
+    <TextView 
+        android:id="@+id/appletRecommendation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/appletSymlinkedTo"
+        android:textColor="#ffffff"/>    
+
+</RelativeLayout>
