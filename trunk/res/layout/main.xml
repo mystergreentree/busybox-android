@@ -1,100 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:gravity="center"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/stericson.busybox.donate"
+    android:id="@+id/main"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:id="@+id/main">
+    android:background="#303030" >
 
-	<RelativeLayout 
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:background="@drawable/roundedborder_black_translucent"
-		android:layout_centerInParent="true">
+    <!-- HEADER -->
 
-		<!-- HEADER -->
-		<include android:id="@+id/header" layout="@layout/header" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerHorizontal="true"/>	
-	
-		<RelativeLayout 
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:id="@+id/view1"
-			android:layout_below="@id/header"
-			android:layout_centerHorizontal="true">
-		    
-			<TextView 
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:id="@+id/choose"
-				android:textColor="#00ff00"
-				android:layout_centerHorizontal="true"
-				android:gravity="center"
-				android:layout_margin="10dp"/>
+    <include
+        android:id="@+id/header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        layout="@layout/header"
+        android:layout_marginLeft="10px" />
 
-		    <Spinner
-				android:id="@+id/appletcheck"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_centerHorizontal="true"
-				android:layout_below="@id/choose"
-				android:layout_margin="5dp"/>
-					    
-			<RelativeLayout 
-			    android:id="@+id/options"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_centerHorizontal="true"
-				android:layout_below="@id/appletcheck">
-			
-				<Spinner
-					android:id="@+id/busyboxversiontobe"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"/>
+    <com.viewpagerindicator.TitlePageIndicator
+        android:id="@+id/indicator"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/header"
+        android:background="#ff404040" />
 
-				<CheckBox
-					android:id="@+id/customtune"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="@string/customTune"
-					android:layout_toRightOf="@+id/busyboxversiontobe"/>
-				
-			</RelativeLayout>													
-						
-			<RelativeLayout 
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_below="@id/options"
-				android:layout_centerHorizontal="true">
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/indicator"
+        android:layout_marginBottom="50dip"
+        android:layout_weight="1" />
 
-				<Button
-					android:id="@+id/install"
-					android:layout_width="100dp"
-					android:layout_height="75dp"
-					android:text="@string/install"
-					android:textColor="#ffffff"
-					android:onClick="proceed"
-					android:background="@drawable/button"
-					/>
+    <RelativeLayout
+        android:id="@+id/container"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/viewpager"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="-50dp" >
 
-				<Button
-					android:id="@+id/uninstall"
-					android:layout_width="100dp"
-					android:layout_height="75dp"
-					android:text="@string/uninstall"
-					android:layout_toRightOf="@id/install"
-					android:onClick="uninstall"
-					android:textColor="#ffffff"
-					android:background="@drawable/button"
-					/>
+        <Button
+            android:id="@+id/uninstall"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:onClick="uninstall"
+            android:text="@string/uninstall"
+            android:textColor="#ffffff"
+            android:layout_centerHorizontal="true" />
 
-			</RelativeLayout>
-		</RelativeLayout>
-		
-		<RelativeLayout 
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:id="@+id/pop"/>
+        <Button
+            android:id="@+id/install"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:onClick="install"
+            android:text="@string/install"
+            android:textColor="#ffffff"
+            android:layout_toLeftOf="@id/uninstall"
+            android:layout_alignLeft="@id/uninstall"
+            android:layout_alignParentLeft="true" />
+        
+        <Button
+            android:id="@+id/restore"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_alignRight="@id/uninstall"
+            android:layout_toRightOf="@id/uninstall"
+            android:onClick="restore"
+            android:text="@string/restore"
+            android:textColor="#ffffff"
+            android:layout_alignParentRight="true"
+            android:enabled="false" />
+        
+    </RelativeLayout>
 
-	</RelativeLayout>
-</LinearLayout>
+    <RelativeLayout
+        android:id="@+id/pop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+         />
+
+</RelativeLayout>
