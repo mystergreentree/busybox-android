@@ -24,7 +24,7 @@ public class OnUpgradeReceiver extends BroadcastReceiver implements CallBack
 	@Override
 	public void onReceive(Context context, Intent intent)
 	{
-		boolean blowout = false;
+		boolean blowout = true;
 		if (blowout)
 		{
 			new PreferenceService(context).setDeleteDatabase(true);

@@ -49,7 +49,19 @@ public class AppletInformation
 		catch (Exception ignore) {}
 		
 		RootTools.useRoot = false;
-					
+				
+		if (!dbService.isReady())
+		{
+			//Backup current Busybox versions.
+			for (String path : Common.findBusyBoxLocations(false, false))
+			{
+				if (!new File(storagePath + "/" + this.getInode(path + "busybox")).exists())
+				{
+					this.makeBackup("busybox", path, this.getInode(path + "busybox"));
+				}
+			}
+		}
+		
 		for (String applet : applets)
 		{
 			if (gai != null && gai.isCancelled())

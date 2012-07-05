@@ -8,16 +8,16 @@ public class Constants {
 							NEW = 2,
 							BOTH = 3;
 
-	public static int		updateType = UPDATE;
+	public static int		updateType = NEW;
 	
 	public static String	EXTRA_BUSYBOX_VERSION = "version",
 							EXTRA_INSTALL_PATH = "path",
 							PREF_NAME = "BusyBox";
 	
-	public static String	newest = "BusyBox 1.20.1";
+	public static String	newest = "BusyBox 1.20.2";
 	public static String 	Key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAk78EBO78KPQkOCo2SCPqImOv6ViRmY7Vy/d5xOi1+B1mJEWtHreHxrDw9sdyVaxbd3X/PnFIUQzj2Qk159RMP7p2lIiJ1yYVyifOciVV1f4r2z7llCKMJYCVVe0k+9P5SVEWZWoV+5QqJqm06pZ12ChsMNUN+3JujIUtiCARVn4wBmCT+eXfHcxmhyVfnE4a+3FlLGYrnCKE2B6AhcHXJXfPaW3K4P6JMDbWGoxO6yM/qPHqsfbsZK45Ooaqs1To2Oe6b7SaaAxAXPGipTCzQ7x8BRnMLkTMoLVDN0ABVlCgYpcWB9HysPALIXstSUWeGnF4WptkAfc34sQZm42DsQIDAQAB";
 	
-	public static String[] versions = { "BusyBox 1.20.1", "BusyBox 1.20.0", "BusyBox 1.19.4", "BusyBox 1.19.3", "BusyBox 1.19.2"};
+	public static String[] versions = { "BusyBox 1.20.2", "BusyBox 1.20.1", "BusyBox 1.20.0", "BusyBox 1.19.4", "BusyBox 1.19.3"};
 	
 	public static String[] locations = { "/system/bin", "/system/xbin", "Custom Path" };
 

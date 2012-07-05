@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import stericson.busybox.donate.App;
+import stericson.busybox.donate.Common;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.domain.Result;
@@ -77,7 +78,7 @@ public class UninstallJob extends AsyncJob<Result>
 				}
 			}
 			
-			extractResources(activity, "toolbox", Environment.getExternalStorageDirectory() + "/toolbox-stericson");
+			Common.extractResources(activity, "toolbox", Environment.getExternalStorageDirectory() + "/toolbox-stericson");
 			
 			String[] commands = {
 					"dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
@@ -201,7 +202,7 @@ public class UninstallJob extends AsyncJob<Result>
 			
 			if (!new File("/system/bin/reboot").exists())
 			{
-				extractResources(this.activity, "reboot", Environment.getExternalStorageDirectory() + "/reboot-stericson");
+				Common.extractResources(this.activity, "reboot", Environment.getExternalStorageDirectory() + "/reboot-stericson");
 
 				String[] commands_0 = {
 						toolbox + " dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
@@ -230,40 +231,4 @@ public class UninstallJob extends AsyncJob<Result>
     {
 	    activity.uninstallDone(result);
     }
-	
-	/**
-	 * Used to extract certain assets we may need. Can be used by any class to
-	 * extract something. Right now this is tailored only for the initial check
-	 * sequence but can easily be edited to allow for more customization
-	 */
-	public void extractResources(Activity activity, String file, String outputPath) {
-		String realFile = "";
-		if (file.contains("toolbox"))
-		{
-			realFile = "toolbox.png";
-		}
-		else if (file.contains("reboot"))
-		{
-			realFile = "reboot.png";
-		}
-		try {
-			InputStream in = activity.getResources().getAssets().open(realFile);
-			OutputStream out = new FileOutputStream(
-					outputPath);
-			byte[] buf = new byte[1024];
-			int len;
-
-			while ((len = in.read(buf)) > 0) {
-				out.write(buf, 0, len);
-			}
-			// we have to close these here
-			out.flush();
-			out.close();
-			in.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 }
