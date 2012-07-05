@@ -10,14 +10,47 @@ public class Item implements Serializable {
 	private String appletPath = "";
 	private String symlinkedTo = "";
 	private String appletDescription = "";
+	private String backupHardlink = "";
 	private String backupSymlink = "";
 	private String backupFilePath = "";
+	private String inode = "";
 	private boolean overwrite = true;
 	private boolean found = false;
 	private boolean recommend = true;
 	private boolean remove = false;
 	private boolean overwriteAll = false;
+	private boolean ishardlink = false;
 	
+	public String getInode()
+	{
+		return inode;
+	}
+
+	public void setInode(String inode)
+	{
+		this.inode = inode;
+	}
+	
+	public String getBackupHardlink()
+	{
+		return backupHardlink;
+	}
+
+	public void setBackupHardlink(String backupHardlink)
+	{
+		this.backupHardlink = backupHardlink;
+	}
+
+	public boolean isIshardlink()
+	{
+		return ishardlink;
+	}
+
+	public void setIshardlink(boolean ishardlink)
+	{
+		this.ishardlink = ishardlink;
+	}
+
 	public String getBackupFilePath()
 	{
 		return backupFilePath;

@@ -35,6 +35,8 @@ public class RestoreBackup extends AsyncJob<Result>
 		String applet = "";
 		String path = "";
 		String symlink = "";
+		String inode = "";
+		String hardlink = "";
 		
 		RootTools.useRoot = true;
 
@@ -43,7 +45,14 @@ public class RestoreBackup extends AsyncJob<Result>
 		this.publishProgress("Preparing System...");
 		
 		try
-		{				
+		{
+			if (!RootTools.fixUtils(new String[] {"ls", "rm", "ln", "dd", "chmod", "mount"}))
+			{
+				result.setError(activity.getString(R.string.utilProblem));
+				result.setSuccess(false);
+			    return result; 
+			}
+
 			DBService db = new DBService(activity);
 			
 			List<Item> items = db.getApplets();
@@ -52,6 +61,8 @@ public class RestoreBackup extends AsyncJob<Result>
 			{
 				applet = item.getApplet();
 				path = item.getBackupFilePath();
+				inode = item.getInode();
+				hardlink = item.getBackupHardlink();
 				
 				if (path.endsWith("/"))
 				{
@@ -62,29 +73,50 @@ public class RestoreBackup extends AsyncJob<Result>
 				
 				if (!symlink.equals(""))
 				{
-					this.publishProgress("Restoring " + item.getApplet() + "...");
-
-					if (!restoreSymlink(applet, path, symlink))
+					if (!applet.equals("") && !path.equals("") && !symlink.equals(""))
 					{
-						result.setSuccess(false);
+						this.publishProgress("Restoring " + item.getApplet() + "...");
+	
+						if (!restoreSymlink(applet, path, symlink, inode))
+						{
+							result.setSuccess(false);
+						}
+						else
+						{
+							clean(applet, path);
+						}
 					}
-					else
+				}
+				else if (item.isIshardlink())
+				{
+					if (new File(storagePath + "/" + inode).exists())
 					{
-						clean(applet, path);
+						this.publishProgress("Restoring " + item.getApplet() + "...");
+	
+						if (!restoreHardlink(applet, path, hardlink, inode))
+						{
+							result.setSuccess(false);
+						}
+						else
+						{
+							clean(applet, path);
+						}					
 					}
 				}
 				else if (!path.equals(""))
 				{
-					this.publishProgress("Restoring " + item.getApplet() + "...");
-
-					if (!restoreApplet(applet, path))
+					if (!applet.equals("") && !path.equals("") && new File(storagePath + "/" + applet).exists())
 					{
-						result.setSuccess(false);
-					}
-					else
-					{
-						clean(applet, path);
-				
+						this.publishProgress("Restoring " + item.getApplet() + "...");
+	
+						if (!restoreApplet(applet, path, inode))
+						{
+							result.setSuccess(false);
+						}
+						else
+						{
+							clean(applet, path);
+						}
 					}
 				}
 			}
@@ -146,61 +178,118 @@ public class RestoreBackup extends AsyncJob<Result>
 		catch (Exception ignore) {}
 	}
 	
-	public boolean restoreApplet(String applet, String path)
+	public boolean restoreHardlink(String applet, String path, String hardlink, String inode)
 	{
-		if (!applet.equals("") && !path.equals("") && new File(storagePath + "/" + applet).exists())
+		if (!restoredPaths.contains(hardlink.replace("/busybox", "")))
 		{
-			String mountType = "rw";
-			try
+			if (restoreApplet("busybox", hardlink.replace("/busybox", ""), inode))
 			{
-				mountType = RootTools.getMountedAs(path);
+				restoredPaths.add(hardlink.replace("/busybox", ""));
+			}
+		}
+		
+		//restore the applet.
+		String mountType = "rw";
+		try
+		{
+			mountType = RootTools.getMountedAs(path);
 
-				RootTools.remount(path, "rw");
-				String[] commands = new String[]
-				        {
-							toolbox + " rm " + path + "/" + applet,
-							"/system/bin/toolbox rm " + path + "/" + applet,
-							"rm " + path + "/" + applet,
-							"dd if=" + storagePath + "/" + applet + " of=" + path + "/" + applet,
-							toolbox + " dd if=" + storagePath + "/" + applet + " of=" + path + "/" + applet,
-							"/system/bin/toolbox dd if=" + storagePath + "/" + applet + " of=" + path + "/" + applet,
-							toolbox + " chmod 0755 " + path + "/" + applet,
-							"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
-							"chmod 0755 " + path + "/" + applet
-						};
+			RootTools.remount(path, "rw");
+			String[] commands = new String[]
+			        {
+						toolbox + " rm " + path + "/" + applet,
+						"/system/bin/toolbox rm " + path + "/" + applet,
+						"rm " + path + "/" + applet,
+						toolbox + " ln " + hardlink + " " + path + "/" + applet,
+						"/system/bin/toolbox ln " + hardlink + " " + path + "/" + applet,
+						"ln " + hardlink + " " + path + "/" + applet,
+						toolbox + " chmod 0755 " + path + "/" + applet,
+						"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
+						"chmod 0755 " + path + "/" + applet
+					};
+			
+			RootTools.sendShell(commands, 0, -1);
+			
+				
+			if (!new File(path + "/" + applet).exists())
+			{
+				return false;
+			}
+		}
+		catch (Exception ingore)
+		{
+			return false;
+		}
+		finally
+		{
+			RootTools.remount(path, mountType);
+		}
+		
+		if (new File(path + "/" + applet).exists())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}		
+	}
+	
+	public boolean restoreApplet(String applet, String path, String backup_name)
+	{
+		String mountType = "rw";
+		try
+		{
+			mountType = RootTools.getMountedAs(path);
+
+			RootTools.remount(path, "rw");
+			String[] commands = new String[]
+			        {
+						toolbox + " rm " + path + "/" + applet,
+						"/system/bin/toolbox rm " + path + "/" + applet,
+						"rm " + path + "/" + applet,
+						"dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
+						toolbox + " dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
+						"/system/bin/toolbox dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
+						toolbox + " chmod 0755 " + path + "/" + applet,
+						"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
+						"chmod 0755 " + path + "/" + applet
+					};
+			
+			RootTools.sendShell(commands, 0, -1);
+			
+			if (!new File(path + "/" + applet).exists())
+			{
+				commands = new String[] {
+						"cat " + storagePath + "/" + backup_name + " > " + path + "/" + applet,
+						"cp " + storagePath + "/" + backup_name + " " + path + "/" + applet,
+						toolbox + " cat " + storagePath + "/" + backup_name + " > " + path + "/" + applet,
+						toolbox + " cp " + storagePath + "/" + backup_name + " " + path + "/" + applet,
+						"/system/bin/toolbox cat " + storagePath + "/" + backup_name + " > " + path + "/" + applet,
+						"/system/bin/toolbox cp " + storagePath + "/" + backup_name + " " + path + "/" + applet,
+						toolbox + " chmod 0755 " + path + "/" + applet,
+						"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
+						"chmod 0755 " + path + "/" + applet};
 				
 				RootTools.sendShell(commands, 0, -1);
 				
 				if (!new File(path + "/" + applet).exists())
 				{
-					commands = new String[] {
-							"cat " + storagePath + "/" + applet + " > " + path + "/" + applet,
-							"cp " + storagePath + "/" + applet + " " + path + "/" + applet,
-							toolbox + " cat " + storagePath + "/" + applet + " > " + path + "/" + applet,
-							toolbox + " cp " + storagePath + "/" + applet + " " + path + "/" + applet,
-							toolbox + " chmod 0755 " + path + "/" + applet,
-							"/system/bin/toolbox cat " + storagePath + "/" + applet + " > " + path + "/" + applet,
-							"/system/bin/toolbox cp " + storagePath + "/" + applet + " " + path + "/" + applet,
-							"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
-							"chmod 0755 " + path + "/" + applet};
-					
-					RootTools.sendShell(commands, 0, -1);
-					
-					if (!new File(path + "/" + applet).exists())
-					{
-						return false;
-					}
+					return false;
 				}
 			}
-			catch (Exception ingore)
-			{
-				return false;
-			}
-			finally
-			{
-				RootTools.remount(path, mountType);
-			}
-		
+		}
+		catch (Exception ingore)
+		{
+			return false;
+		}
+		finally
+		{
+			RootTools.remount(path, mountType);
+		}
+	
+		if (new File(path + "/" + applet).exists())
+		{
 			return true;
 		}
 		else
@@ -209,48 +298,41 @@ public class RestoreBackup extends AsyncJob<Result>
 		}
 	}
 	
-	public boolean restoreSymlink(String applet, String path, String symlink)
+	public boolean restoreSymlink(String applet, String path, String symlink, String inode)
 	{
-		if (!applet.equals("") && !path.equals("") && !symlink.equals(""))
+		if (symlink.contains("/busybox") && !restoredPaths.contains(symlink.replace("/busybox", "")))
 		{
-			if (symlink.contains("/busybox") && !restoredPaths.contains(symlink.replace("/busybox", "")))
+			if (restoreApplet("busybox", symlink.replace("/busybox", ""), inode))
 			{
-				if (restoreApplet("busybox", symlink.replace("/busybox", "")))
-				{
-					restoredPaths.add(symlink.replace("/busybox", ""));
-				}
+				restoredPaths.add(symlink.replace("/busybox", ""));
 			}
-			
-			try
-			{
-				String[] commands = new String[]
-				        {
-							toolbox + " rm " + path + "/" + applet,
-							"/system/bin/toolbox rm " + path + "/" + applet,
-							"rm " + path + "/" + applet,
-							toolbox + " ln -s " + symlink + " " + path + "/" + applet,
-							"/system/bin/toolbox ln -s " + symlink + " " + path + "/" + applet,
-							"ln -s " + symlink + " " + path + "/" + applet
-						};
-				
-				RootTools.sendShell(commands, 0, -1);
-			}
-			catch (Exception ignore)
-			{
-				return false;
-			}
-			
-			if (!RootTools.getSymlink(new File(path + "/" + applet)).equals(symlink))
-			{
-				return false;
-			}
-			
-			return true;
 		}
-		else
+		
+		try
+		{
+			String[] commands = new String[]
+			        {
+						toolbox + " rm " + path + "/" + applet,
+						"/system/bin/toolbox rm " + path + "/" + applet,
+						"rm " + path + "/" + applet,
+						toolbox + " ln -s " + symlink + " " + path + "/" + applet,
+						"/system/bin/toolbox ln -s " + symlink + " " + path + "/" + applet,
+						"ln -s " + symlink + " " + path + "/" + applet
+					};
+			
+			RootTools.sendShell(commands, 0, -1);
+		}
+		catch (Exception ignore)
 		{
 			return false;
 		}
+		
+		if (!RootTools.getSymlink(new File(path + "/" + applet)).equals(symlink))
+		{
+			return false;
+		}
+		
+		return true;
 	}
 
 }

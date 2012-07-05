@@ -45,7 +45,8 @@
             android:onClick="uninstall"
             android:text="@string/uninstall"
             android:textColor="#ffffff"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:enabled="false" />
 
         <Button
             android:id="@+id/install"

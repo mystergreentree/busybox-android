@@ -23,9 +23,7 @@ public class GetSpace extends AsyncJob<Result>
 
 	@Override
     Result handle()
-    {		
-		RootTools.useRoot = false;
-		
+    {				
 		Result result = new Result();
 
 		result.setSpace((float) (RootTools.getSpace(location) / 1000));
