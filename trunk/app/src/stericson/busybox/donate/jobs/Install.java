@@ -55,7 +55,7 @@ public class Install
 			{
 
 				//ALWAYS run this, I don't care if it does exist...I want to always make sure it is there.
-				extractResources(activity, "toolbox", Environment.getExternalStorageDirectory() + "/toolbox-stericson");
+				Common.extractResources(activity, "toolbox", Environment.getExternalStorageDirectory() + "/toolbox-stericson");
 				
 				String[] commands = {
 						"dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
@@ -75,7 +75,7 @@ public class Install
 					if (!silent)
 						ij.publishCurrentProgress("Adding reboot...");
 
-					extractResources(activity, "reboot", Environment.getExternalStorageDirectory() + "/reboot-stericson");
+					Common.extractResources(activity, "reboot", Environment.getExternalStorageDirectory() + "/reboot-stericson");
 	
 					commands = new String[] {
 							toolbox + " dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
@@ -89,7 +89,7 @@ public class Install
 				}
 			}	
 	
-			extractResources(activity, version, Environment.getExternalStorageDirectory() + "/busybox-stericson");
+			Common.extractResources(activity, version, Environment.getExternalStorageDirectory() + "/busybox-stericson");
 			
 			if (path == null || path.equals("")) 
 			{
@@ -280,57 +280,5 @@ public class Install
 		RootTools.useRoot = false;
 
 	    return result; 
-	}
-	
-	/**
-	 * Used to extract certain assets we may need. Can be used by any class to
-	 * extract something. Right now this is tailored only for the initial check
-	 * sequence but can easily be edited to allow for more customization
-	 */
-	public void extractResources(Context activity, String file, String outputPath) {
-		String realFile = "";
-		if (file.contains("toolbox"))
-		{
-			realFile = "toolbox.png";
-		}
-		else if (file.contains("reboot"))
-		{
-			realFile = "reboot.png";
-		}
-		else if (file.contains("1.20.1")) {
-			realFile = "busybox1.20.1.png";
-		}
-		else if (file.contains("1.20.0")) {
-			realFile = "busybox20_0.png";
-		}
-		else if (file.contains("1.19.4")) {
-			realFile = "busybox19_4.png";
-		}
-		else if (file.contains("1.19.2")) {
-			realFile = "busybox19_2.png";
-		}
-		else {
-			realFile = "busybox19_3.png";
-		}
-
-		try {
-			InputStream in = activity.getResources().getAssets().open(realFile);
-			OutputStream out = new FileOutputStream(
-					outputPath);
-			byte[] buf = new byte[1024];
-			int len;
-
-			while ((len = in.read(buf)) > 0) {
-				out.write(buf, 0, len);
-			}
-			// we have to close these here
-			out.flush();
-			out.close();
-			in.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }

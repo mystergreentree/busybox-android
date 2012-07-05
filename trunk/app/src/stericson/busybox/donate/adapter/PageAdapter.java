@@ -7,6 +7,7 @@ import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.custom.FontableTextView;
 import stericson.busybox.donate.listeners.AppletInstallerLongClickListener;
 import stericson.busybox.donate.listeners.Location;
+import stericson.busybox.donate.listeners.Version;
 import android.content.Context;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
@@ -109,6 +110,7 @@ public class PageAdapter extends PagerAdapter implements TitleProvider
 			    version = (Spinner) view.findViewById(R.id.busyboxversiontobe);
 			    ArrayAdapter<String> versionAdapter = new ArrayAdapter<String>(context, R.layout.simple_spinner_item, Constants.versions);
 		    	versionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		    	version.setOnItemSelectedListener(new Version());
 		    	version.setAdapter(versionAdapter);
 				
 				path = (Spinner) view.findViewById(R.id.path);
