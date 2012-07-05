@@ -82,12 +82,6 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 		
 	    header = (TextView) findViewById(R.id.header_main);
 		header.setTypeface(tf);
-
-		
-		if (!RootTools.isBusyboxAvailable())
-		{
-			uninstall.setEnabled(false);
-		}
 		
 		new InitialChecks(this).execute();
 		
@@ -359,6 +353,11 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 		    gatherInformation(Constants.appletsString);
 		    
 		    restore.setEnabled(true);
+		    
+			if (RootTools.isBusyboxAvailable())
+			{
+				uninstall.setEnabled(true);
+			}
 		}
 	}
 	

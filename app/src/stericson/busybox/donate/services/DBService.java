@@ -34,6 +34,9 @@ public class DBService
 	private static final String KEY_APPLET_RECOMMEND = "recommend";
 	private static final String KEY_APPLET_REMOVE = "remove";
 	private static final String KEY_APPLET_BACKUP_SYMLINK = "backup_symlink";
+	private static final String KEY_APPLET_BACKUP_HARDLINK = "backup_hardlink";
+	private static final String KEY_APPLET_ISHARDLINK = "ishardlink";
+	private static final String KEY_APPLET_INODE = "inode";
 	private static final String KEY_APPLET_BACKUP_FILE_PATH = "backup_file_path";
 
 	/**
@@ -50,6 +53,9 @@ public class DBService
 	        KEY_APPLET_FOUND + " integer not null DEFAULT 0, " +
 	        KEY_APPLET_RECOMMEND + " integer not null DEFAULT 1, " +
 	        KEY_APPLET_REMOVE + " integer not null DEFAULT 0, " +
+	        KEY_APPLET_ISHARDLINK + " integer not null DEFAULT 0, " +
+	        KEY_APPLET_INODE + " text," +
+	        KEY_APPLET_BACKUP_HARDLINK + " text," +
 	        KEY_APPLET_BACKUP_SYMLINK + " text," +
 			KEY_APPLET_BACKUP_FILE_PATH + " text);";
 
@@ -189,8 +195,11 @@ public class DBService
 				item.setFound(cur.getInt(6) == 0 ? false : true);
 				item.setRecommend(cur.getInt(7) == 0 ? false : true);
 				item.setRemove(cur.getInt(8) == 0 ? false : true);
-				item.setBackupSymlink(cur.getString(9));
-				item.setBackupFilePath(cur.getString(10));
+				item.setIshardlink(cur.getInt(9) == 0 ? false : true);
+				item.setInode(cur.getString(10));
+				item.setBackupHardlink(cur.getString(11));				
+				item.setBackupSymlink(cur.getString(12));
+				item.setBackupFilePath(cur.getString(13));
 				
 				return item;
 			}
@@ -248,6 +257,13 @@ public class DBService
 				
 				if (item.getSymlinkedTo().equals(""))
 				{
+					if (item.isIshardlink())
+					{
+						initialValues.put(KEY_APPLET_ISHARDLINK, item.isIshardlink());
+						initialValues.put(KEY_APPLET_INODE, item.getInode());
+						initialValues.put(KEY_APPLET_BACKUP_HARDLINK, item.getBackupHardlink());
+					}
+					
 					item.setBackupFilePath(item.getAppletPath());
 				}
 				else
@@ -305,8 +321,11 @@ public class DBService
 						item.setFound(cur.getInt(6) == 0 ? false : true);
 						item.setRecommend(cur.getInt(7) == 0 ? false : true);
 						item.setRemove(cur.getInt(8) == 0 ? false : true);
-						item.setBackupSymlink(cur.getString(9));
-						item.setBackupFilePath(cur.getString(10));
+						item.setIshardlink(cur.getInt(9) == 0 ? false : true);
+						item.setInode(cur.getString(10));
+						item.setBackupHardlink(cur.getString(11));				
+						item.setBackupSymlink(cur.getString(12));
+						item.setBackupFilePath(cur.getString(13));
 						
 						list.add(item);
 					}

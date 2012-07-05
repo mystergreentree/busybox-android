@@ -22,8 +22,6 @@ public class GetLocations extends AsyncJob<Result>
 	@Override
     Result handle()
     {		
-		RootTools.useRoot = false;
-
 		Result result = new Result();
 
 		result.setLocations(Common.findBusyBoxLocations(false, single));

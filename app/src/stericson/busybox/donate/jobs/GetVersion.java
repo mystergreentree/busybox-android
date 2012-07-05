@@ -21,8 +21,6 @@ public class GetVersion extends AsyncJob<Result>
 	@Override
     Result handle()
     {		
-		RootTools.useRoot = false;
-
 		Result result = new Result();
 
 		result.setMessage(RootTools.getBusyBoxVersion());

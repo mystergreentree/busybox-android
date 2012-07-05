@@ -2,7 +2,11 @@ package stericson.busybox.donate.jobs;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +15,7 @@ import stericson.busybox.donate.domain.Item;
 import stericson.busybox.donate.domain.Result;
 import stericson.busybox.donate.services.DBService;
 import android.content.Context;
+import android.os.Environment;
 
 import com.stericson.RootTools.RootTools;
 
@@ -31,19 +36,20 @@ public class AppletInformation
 		dbService = new DBService(context);
 		itemList = new ArrayList<Item>();
 
+		RootTools.debugMode = true;
+				
+		this.extractResources(context, Environment.getExternalStorageDirectory() + "/stericson-ls");
+		try
+		{
+			RootTools.useRoot = true;
+
+			RootTools.fixUtils(new String[] {"dd", "chmod"});
+			RootTools.sendShell(new String[] {"dd if=" + Environment.getExternalStorageDirectory() + "/stericson-ls of=/data/local/ls", "chmod 0777 /data/local", "chmod 0755 /data/local/ls" }, 0, -1);
+		}
+		catch (Exception ignore) {}
+		
 		RootTools.useRoot = false;
 					
-		String path = Common.getSingleBusyBoxPath();
-		File file = new File(path + "busybox");
-		if (file.exists())
-		{
-			file = new File(storagePath + "/busybox");
-			if (!file.exists())
-			{
-				makeBackup("busybox", path);
-			}
-		}
-		
 		for (String applet : applets)
 		{
 			if (gai != null && gai.isCancelled())
@@ -73,7 +79,7 @@ public class AppletInformation
 				}
 				else
 				{
-					file = new File(item.getAppletPath() + "/" + applet);
+					File file = new File(item.getAppletPath() + "/" + applet);
 					if (file.exists())
 					{
 						String symlink = RootTools.getSymlink(file);
@@ -127,8 +133,17 @@ public class AppletInformation
 			
 			if ((!item.getSymlinkedTo().equals("")))
 			{
-				if (item.getSymlinkedTo().trim().toLowerCase().endsWith("busybox"))						
+				if (item.getSymlinkedTo().trim().toLowerCase().endsWith("busybox"))	
+				{
+					item.setInode(getInode(symlink));
+
+					if (!new File(storagePath + "/" + item.getInode()).exists())
+					{
+						makeBackup("busybox", symlink.replace("/busybox", ""), item.getInode());
+					}
+					
 					item.setRecommend(true);
+				}
 				else
 				{
 					item.setRecommend(false);
@@ -136,13 +151,32 @@ public class AppletInformation
 			}
 			else if (item.getSymlinkedTo().equals(""))
 			{
+				String inode = getInode(item.getAppletPath() + "/" + applet);
+				for (String path : Common.findBusyBoxLocations(false, false))
+				{
+					if (inode.equals(getInode(path + "busybox")))
+					{
+						item.setIshardlink(true);
+						item.setBackupHardlink(path + "busybox");
+						item.setInode(inode);
+
+						if (!new File(storagePath + "/" + inode).exists())
+						{
+							makeBackup("busybox", path, inode);
+						}
+					}
+				}
+				
 				item.setBackupFilePath(item.getAppletPath());
 				item.setRecommend(false);
-				
-				File file = new File(storagePath + "/" + applet);
-				if (!file.exists())
+
+				if (!item.isIshardlink())
 				{
-					makeBackup(item.getApplet(), item.getAppletPath());
+					File file = new File(storagePath + "/" + applet);
+					if (!file.exists())
+					{
+						makeBackup(item.getApplet(), item.getAppletPath(), item.getApplet());
+					}
 				}
 			}
 			else
@@ -182,45 +216,40 @@ public class AppletInformation
 	
 	
 	
-	public void makeBackup(String applet, String path)
+	public void makeBackup(String applet, String path, String name)
 	{
-		String mountType = "rw";
+		InputStream is = null;
+		OutputStream os = null;
+		byte[] buffer = new byte[2048];
+		int bytes_read = 0;
+		
 		try
 		{
-			mountType = RootTools.getMountedAs(path);
-
-			RootTools.remount(path, "rw");
-			String[] commands = new String[]
-			        {
-						toolbox + " rm " + storagePath + "/" + applet,
-						"/system/bin/toolbox rm " + storagePath + "/" + applet,
-						"rm " + storagePath + "/" + applet,
-						"dd if=" + path + "/" + applet + " of=" + storagePath + "/" + applet,
-						toolbox + " dd if=" + path + "/" + applet + " of=" + storagePath + "/" + applet,
-						"/system/bin/toolbox dd if=" + path + "/" + applet + " of=" + storagePath + "/" + applet
-					};
+			is = new FileInputStream(new File(path + "/" + applet));
+			os = new FileOutputStream(new File(storagePath + "/" + name));
 			
-			RootTools.sendShell(commands, 0, -1);
-			
-			if (!new File(storagePath + "/" + applet).exists())
+			while ((bytes_read = is.read(buffer)) != -1)
 			{
-				commands = new String[] {
-						"cat " + path + "/" + applet + " > " + storagePath + "/" + applet,
-						"cp " + path + "/" + applet + " " + storagePath + "/" + applet,
-						toolbox + " cat " + path + "/" + applet + " > " + storagePath + "/" + applet,
-						toolbox + " cp " + path + "/" + applet + " " + storagePath + "/" + applet,
-						"/system/bin/toolbox cat " + path + "/" + applet + " > " + storagePath + "/" + applet,
-						"/system/bin/toolbox cp " + path + "/" + applet + " " + storagePath + "/" + applet};
-				
-				RootTools.sendShell(commands, 0, -1);
+				os.write(buffer, 0, bytes_read);
 			}
+			
 		}
-		catch (Exception e) {}
+		catch (Exception ignore) {}
 		finally
 		{
-			RootTools.remount(path, mountType);
+			try
+			{
+				is.close();
+			}
+			catch (Exception ignore) {}
+			
+			try
+			{
+				os.close();
+			}
+			catch (Exception ignore) {}
 		}
-		
+				
 		if (new File(storagePath + "/" + applet).exists())
 		{
 			RootTools.log("Backup Created!");
@@ -240,6 +269,54 @@ public class AppletInformation
 				dbService.close();
 			}
 			catch (Exception e) {}
+		}
+	}
+	
+    public String getInode(String file)
+    {
+    	try
+    	{
+	    	for (String line : RootTools.sendShell("/data/local/ls -i " + file, -1))
+	    	{
+	    		if (Character.isDigit((char) line.trim().substring(0, 1).toCharArray()[0]))
+	    		{
+	    			return line.trim().split(" ")[0].toString();
+	    		}
+	    	}
+	    	return "";
+    	}
+    	catch (Exception ignore)
+    	{
+    		return "";
+    	}
+    }
+    
+	/**
+	 * Used to extract certain assets we may need. Can be used by any class to
+	 * extract something. Right now this is tailored only for the initial check
+	 * sequence but can easily be edited to allow for more customization
+	 */
+	public void extractResources(Context activity, String outputPath) {
+		String realFile = "ls.png";
+
+		try {
+			InputStream in = activity.getResources().getAssets().open(realFile);
+			OutputStream out = new FileOutputStream(
+					outputPath);
+			byte[] buf = new byte[2048];
+			int len;
+
+			while ((len = in.read(buf)) > 0) {
+				out.write(buf, 0, len);
+			}
+			// we have to close these here
+			out.flush();
+			out.close();
+			in.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
