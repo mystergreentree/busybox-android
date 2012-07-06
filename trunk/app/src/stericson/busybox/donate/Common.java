@@ -11,7 +11,6 @@ import java.util.Set;
 
 import android.content.Context;
 
-import com.stericson.RootTools.Permissions;
 import com.stericson.RootTools.RootTools;
 
 public class Common

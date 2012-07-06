@@ -1,17 +1,11 @@
 package stericson.busybox.donate.jobs;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import stericson.busybox.donate.App;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.domain.Result;
-import android.app.Activity;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
@@ -22,7 +16,6 @@ public class UnInstallAppletJob extends AsyncJob<Result>
 	private MainActivity activity;
 	private String applet;
 	private String path;
-	private String toolbox = "/data/local/toolbox";
 	private int position;
 	private AdapterView<?> adapter;
 	

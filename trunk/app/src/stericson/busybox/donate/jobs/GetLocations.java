@@ -6,8 +6,6 @@ import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.domain.Result;
 import stericson.busybox.donate.interfaces.CallBack;
 
-import com.stericson.RootTools.RootTools;
-
 public class GetLocations extends AsyncJob<Result>
 {
 	private CallBack cb;

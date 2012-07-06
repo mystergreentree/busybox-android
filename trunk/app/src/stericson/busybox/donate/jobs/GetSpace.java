@@ -9,14 +9,12 @@ import com.stericson.RootTools.RootTools;
 
 public class GetSpace extends AsyncJob<Result>
 {
-	private MainActivity activity;
 	private String location;
 	private CallBack cb;
 	
 	public GetSpace(MainActivity activity, String location, CallBack cb)
 	{
 		super(activity, R.string.initialChecks, false, false);
-		this.activity = activity;
 		this.location = location;
 		this.cb = cb;
 	}
