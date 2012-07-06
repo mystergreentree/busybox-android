@@ -121,7 +121,7 @@ public class Common
 				if (file.exists()) {
 					String symlink = RootTools.getSymlink(new File(paths + "/busybox"));
 					
-					if (includeSymlinks || !symlink.equals(""))
+					if (includeSymlinks || symlink.equals(""))
 					{
 						tmpSet.add(paths);						
 					}
