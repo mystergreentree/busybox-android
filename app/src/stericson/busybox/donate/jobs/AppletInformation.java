@@ -26,7 +26,6 @@ public class AppletInformation
 	private List<Item> itemList;
 	private Item item;
 	private String storagePath = "";
-	private String toolbox = "/data/local/toolbox";
 
 	
 	public Result getAppletInformation(Context context, boolean updating, GatherAppletInformation gai, String [] applets)
