@@ -22,18 +22,26 @@ public class OnUpgradeReceiver extends BroadcastReceiver implements CallBack
 {
 
 	@Override
-	public void onReceive(Context context, Intent intent)
+	public void onReceive(final Context context, Intent intent)
 	{
-		boolean blowout = true;
+		boolean blowout = false;
 		if (blowout)
 		{
 			new PreferenceService(context).setDeleteDatabase(true);
 			
-			try
+			Thread t = new Thread()
 			{
-				RootTools.sendShell("rm " + context.getFilesDir().toString() + "/*", -1);
-			}
-			catch (Exception ignore) {}
+				public void run()
+				{
+					try
+					{
+						RootTools.sendShell("rm " + context.getFilesDir().toString() + "/*", -1);						
+					}
+					catch (Exception ignore) {}
+				}
+			};
+			
+			t.start();
 		}
 		
 		SharedPreferences sp = context.getSharedPreferences("BusyBox", 0);
@@ -46,7 +54,8 @@ public class OnUpgradeReceiver extends BroadcastReceiver implements CallBack
 
 			if (sp.getBoolean("auto-update", false))
 			{
-				String location = Common.findBusyBoxLocations(false, true)[0];
+				String[] locations = Common.findBusyBoxLocations(false, true);
+				String location = locations.length > 0 ? Common.findBusyBoxLocations(false, true)[0] : "";
 				
 				if (location == null || location.equals(""))
 					location = "/system/bin";

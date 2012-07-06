@@ -111,7 +111,7 @@
 						If you need an applet added, please email me at StericDroid@gmail.com</string>
 
 	<string name="advanced">To access the advanced features of Smart Install, touch the arrow above.</string>
-	<string name="smart_install_loading">Smart Install is loading...we are gathering information and taking a backup of your system. You may go ahead install Busybox, Smart install will continue gathering information after the install and you can come back later to perform a smart install of BusyBox or to tweak the install of BusyBox.</string>
+	<string name="smart_install_loading">Smart Install is loading...we are gathering information and taking a backup of your system. You may go ahead and install Busybox, Smart install will continue gathering information after the install and you can come back later to perform a smart install of BusyBox or to tweak the install of BusyBox.</string>
 	
 	
 	

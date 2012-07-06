@@ -39,10 +39,9 @@ public class InitialChecks extends AsyncJob<Result>
 			} catch (Exception e) {				
 				result.setMessage(activity.getString(R.string.accessUndetermined));
 			}
-		}		
-			
+		}
+
 		Common.findBusyBoxLocations(false, false);
-		
 
 		result.setSuccess(true);
 	    return result; 
