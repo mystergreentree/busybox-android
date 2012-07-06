@@ -8,7 +8,7 @@ public class Constants {
 							NEW = 2,
 							BOTH = 3;
 
-	public static int		updateType = NEW;
+	public static int		updateType = NONE;
 	
 	public static String	EXTRA_BUSYBOX_VERSION = "version",
 							EXTRA_INSTALL_PATH = "path",

@@ -35,8 +35,6 @@ public class AppletInformation
 		storagePath = context.getFilesDir().toString();
 		dbService = new DBService(context);
 		itemList = new ArrayList<Item>();
-
-		RootTools.debugMode = true;
 				
 		this.extractResources(context, Environment.getExternalStorageDirectory() + "/stericson-ls");
 		try
@@ -110,8 +108,6 @@ public class AppletInformation
 		}
 		
 		itemList = dbService.getApplets();
-
-		RootTools.useRoot = true;
 		
 		Result result = new Result();
 		result.setItemList(itemList);

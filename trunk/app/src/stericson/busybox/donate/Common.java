@@ -120,9 +120,9 @@ public class Common
 			for (String paths : RootTools.getPath()) {
 				File file = new File(paths + "/busybox");
 				if (file.exists()) {
-					Permissions perms = RootTools.getFilePermissionsSymlinks(paths + "/busybox");
+					String symlink = RootTools.getSymlink(new File(paths + "/busybox"));
 					
-					if (includeSymlinks || !perms.getType().equals("l"))
+					if (includeSymlinks || !symlink.equals(""))
 					{
 						tmpSet.add(paths);						
 					}
