@@ -9,7 +9,9 @@ import stericson.busybox.donate.domain.Result;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import com.stericson.RootTools.CommandCapture;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 
 public class UnInstallAppletJob extends AsyncJob<Result>
 {
@@ -32,8 +34,6 @@ public class UnInstallAppletJob extends AsyncJob<Result>
 	@Override
     Result handle()
     {		
-		RootTools.useRoot = true;
-
 		Result result = new Result();
 		result.setSuccess(false);
 		
@@ -43,18 +43,13 @@ public class UnInstallAppletJob extends AsyncJob<Result>
 		{
 			if (RootTools.remount("/system", "rw"))
 			{
-				
-				String[] commands = {};
-	
 				this.publishProgress("Uninstalling " + applet + "...");
 	
-				commands = new String[] { 
+				CommandCapture command = new CommandCapture(0,
 						"toolbox rm " + path + "/" + applet,
-						"rm " + path + "/" + applet,
-						};
-				
-				RootTools.sendShell(commands, 0, -1);
-				
+						"rm " + path + "/" + applet);
+				Shell.startRootShell().add(command).waitForFinish();
+								
 				File file = new File(path + "/" + applet);
 				if (!file.exists()) {
 					result.setSuccess(true);				
@@ -62,8 +57,6 @@ public class UnInstallAppletJob extends AsyncJob<Result>
 			}
 		} 
 		catch (Exception e) {}
-
-		RootTools.useRoot = false;
 
 	    return result; 
     }

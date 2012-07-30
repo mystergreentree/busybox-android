@@ -12,7 +12,9 @@ import stericson.busybox.donate.domain.Result;
 import stericson.busybox.donate.services.DBService;
 import android.widget.TextView;
 
+import com.stericson.RootTools.CommandCapture;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 
 public class RestoreBackup extends AsyncJob<Result>
 {
@@ -21,7 +23,8 @@ public class RestoreBackup extends AsyncJob<Result>
 	private String toolbox = "/data/local/toolbox";
 	private String storagePath = "";
 	private Result result = new Result();
-
+	private CommandCapture command;
+	
 	public RestoreBackup(MainActivity activity)
 	{
 		super(activity, R.string.restoring, true, false);
@@ -43,7 +46,7 @@ public class RestoreBackup extends AsyncJob<Result>
 		result.setSuccess(true);
 		
 		this.publishProgress("Preparing System...");
-		
+				
 		try
 		{
 			if (!RootTools.fixUtils(new String[] {"ls", "rm", "ln", "dd", "chmod", "mount"}))
@@ -158,13 +161,13 @@ public class RestoreBackup extends AsyncJob<Result>
 					if (RootTools.remount(path, "rw"))
 					{
 						RootTools.log("Cleaning up: " + applet);
-						String[] commands = new String[] {
+						
+						command = new CommandCapture(0,
 								toolbox + " rm " + applet_path + "/" + applet,
 								 "/system/bin/toolbox rm " + applet_path + "/" + applet,
-								"rm " + applet_path + "/" + applet
-						};
+								"rm " + applet_path + "/" + applet);
+						Shell.startRootShell().add(command).waitForFinish();
 						
-						RootTools.sendShell(commands, 0, -1);
 					}
 					
 					RootTools.remount(path, mountType);
@@ -195,21 +198,18 @@ public class RestoreBackup extends AsyncJob<Result>
 			mountType = RootTools.getMountedAs(path);
 
 			RootTools.remount(path, "rw");
-			String[] commands = new String[]
-			        {
-						toolbox + " rm " + path + "/" + applet,
-						"/system/bin/toolbox rm " + path + "/" + applet,
-						"rm " + path + "/" + applet,
-						toolbox + " ln " + hardlink + " " + path + "/" + applet,
-						"/system/bin/toolbox ln " + hardlink + " " + path + "/" + applet,
-						"ln " + hardlink + " " + path + "/" + applet,
-						toolbox + " chmod 0755 " + path + "/" + applet,
-						"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
-						"chmod 0755 " + path + "/" + applet
-					};
-			
-			RootTools.sendShell(commands, 0, -1);
-			
+
+			command = new CommandCapture(0,
+					toolbox + " rm " + path + "/" + applet,
+					"/system/bin/toolbox rm " + path + "/" + applet,
+					"rm " + path + "/" + applet,
+					toolbox + " ln " + hardlink + " " + path + "/" + applet,
+					"/system/bin/toolbox ln " + hardlink + " " + path + "/" + applet,
+					"ln " + hardlink + " " + path + "/" + applet,
+					toolbox + " chmod 0755 " + path + "/" + applet,
+					"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
+					"chmod 0755 " + path + "/" + applet);
+			Shell.startRootShell().add(command).waitForFinish();			
 				
 			if (!new File(path + "/" + applet).exists())
 			{
@@ -243,24 +243,22 @@ public class RestoreBackup extends AsyncJob<Result>
 			mountType = RootTools.getMountedAs(path);
 
 			RootTools.remount(path, "rw");
-			String[] commands = new String[]
-			        {
-						toolbox + " rm " + path + "/" + applet,
-						"/system/bin/toolbox rm " + path + "/" + applet,
-						"rm " + path + "/" + applet,
-						"dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
-						toolbox + " dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
-						"/system/bin/toolbox dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
-						toolbox + " chmod 0755 " + path + "/" + applet,
-						"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
-						"chmod 0755 " + path + "/" + applet
-					};
 			
-			RootTools.sendShell(commands, 0, -1);
-			
+			command = new CommandCapture(0,
+					toolbox + " rm " + path + "/" + applet,
+					"/system/bin/toolbox rm " + path + "/" + applet,
+					"rm " + path + "/" + applet,
+					"dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
+					toolbox + " dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
+					"/system/bin/toolbox dd if=" + storagePath + "/" + backup_name + " of=" + path + "/" + applet,
+					toolbox + " chmod 0755 " + path + "/" + applet,
+					"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
+					"chmod 0755 " + path + "/" + applet);
+			Shell.startRootShell().add(command).waitForFinish();			
+
 			if (!new File(path + "/" + applet).exists())
 			{
-				commands = new String[] {
+				command = new CommandCapture(0,
 						"cat " + storagePath + "/" + backup_name + " > " + path + "/" + applet,
 						"cp " + storagePath + "/" + backup_name + " " + path + "/" + applet,
 						toolbox + " cat " + storagePath + "/" + backup_name + " > " + path + "/" + applet,
@@ -269,9 +267,8 @@ public class RestoreBackup extends AsyncJob<Result>
 						"/system/bin/toolbox cp " + storagePath + "/" + backup_name + " " + path + "/" + applet,
 						toolbox + " chmod 0755 " + path + "/" + applet,
 						"/system/bin/toolbox chmod 0755 " + path + "/" + applet,
-						"chmod 0755 " + path + "/" + applet};
-				
-				RootTools.sendShell(commands, 0, -1);
+						"chmod 0755 " + path + "/" + applet);
+				Shell.startRootShell().add(command).waitForFinish();			
 				
 				if (!new File(path + "/" + applet).exists())
 				{
@@ -310,24 +307,21 @@ public class RestoreBackup extends AsyncJob<Result>
 		
 		try
 		{
-			String[] commands = new String[]
-			        {
-						toolbox + " rm " + path + "/" + applet,
-						"/system/bin/toolbox rm " + path + "/" + applet,
-						"rm " + path + "/" + applet,
-						toolbox + " ln -s " + symlink + " " + path + "/" + applet,
-						"/system/bin/toolbox ln -s " + symlink + " " + path + "/" + applet,
-						"ln -s " + symlink + " " + path + "/" + applet
-					};
-			
-			RootTools.sendShell(commands, 0, -1);
+			command = new CommandCapture(0,
+					toolbox + " rm " + path + "/" + applet,
+					"/system/bin/toolbox rm " + path + "/" + applet,
+					"rm " + path + "/" + applet,
+					toolbox + " ln -s " + symlink + " " + path + "/" + applet,
+					"/system/bin/toolbox ln -s " + symlink + " " + path + "/" + applet,
+					"ln -s " + symlink + " " + path + "/" + applet);
+			Shell.startRootShell().add(command).waitForFinish();	
 		}
 		catch (Exception ignore)
 		{
 			return false;
 		}
 		
-		if (!RootTools.getSymlink(new File(path + "/" + applet)).equals(symlink))
+		if (!RootTools.getSymlink(path + "/" + applet).equals(symlink))
 		{
 			return false;
 		}

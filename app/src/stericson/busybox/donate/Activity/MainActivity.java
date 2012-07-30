@@ -1,5 +1,6 @@
 package stericson.busybox.donate.Activity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import stericson.busybox.donate.App;
@@ -32,7 +33,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.stericson.RootTools.Command;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends BaseActivity implements CallBack, Choice {
@@ -281,7 +284,23 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
     		
     		try
 			{
-				List<String> result1 = RootTools.sendShell("busybox " + applet + " --help", -1);
+    			final List<String> result1 = new ArrayList<String>();
+    			
+    			Command command = new Command(0, "busybox " + applet + " --help")
+    			{
+
+					@Override
+					public void commandFinished(int arg0){}
+
+					@Override
+					public void output(int arg0, String arg1)
+					{
+						result1.add(arg1);						
+					}
+    				
+    			};
+    			Shell.startRootShell().add(command).waitForFinish();
+    			
 				String appletInfo = "";
 				
 				for (String info : result1)

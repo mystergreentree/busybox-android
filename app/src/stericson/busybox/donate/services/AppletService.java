@@ -75,6 +75,10 @@ public class AppletService extends Service
 	  
 	  @Override
 	  public void onDestroy() {
-		  appletInformation.closeDb();
+		  try
+		  {
+			  appletInformation.closeDb();
+		  }
+		  catch (Exception e) {}
 	  }
 }

@@ -112,7 +112,7 @@
                     android:layout_marginLeft="3dp"
                     android:text="Clean Mode"
                     android:textSize="13dp"
-                    android:enabled="true" />
+                    android:enabled="false" />
             </LinearLayout>
 
             <LinearLayout

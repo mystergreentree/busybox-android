@@ -33,7 +33,15 @@ public class BaseActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
+		super.onCreate(savedInstanceState);	
+		
+		RootTools.debugMode = true;
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception ignore) {}
+		
 		try {			
 			tf = Typeface.createFromAsset(getAssets(), "fonts/DJGROSS.ttf");
 		} catch (Exception e) {};

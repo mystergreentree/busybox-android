@@ -1,13 +1,10 @@
 package stericson.busybox.donate.receivers;
 
-import com.stericson.RootTools.RootTools;
-
 import stericson.busybox.donate.Common;
 import stericson.busybox.donate.Constants;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.domain.Result;
-import stericson.busybox.donate.interfaces.CallBack;
 import stericson.busybox.donate.jobs.Install;
 import stericson.busybox.donate.services.PreferenceService;
 import android.app.Notification;
@@ -18,101 +15,102 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
-public class OnUpgradeReceiver extends BroadcastReceiver implements CallBack
+import com.stericson.RootTools.CommandCapture;
+import com.stericson.RootTools.Shell;
+
+public class OnUpgradeReceiver extends BroadcastReceiver
 {
 
 	@Override
 	public void onReceive(final Context context, Intent intent)
 	{
-		boolean blowout = false;
-		if (blowout)
+		if (intent.getDataString().contains("stericson.busybox.donate"))
 		{
-			new PreferenceService(context).setDeleteDatabase(true);
-			
-			Thread t = new Thread()
+			boolean blowout = false;
+			if (blowout)
 			{
-				public void run()
+				new PreferenceService(context).setDeleteDatabase(true);
+				
+				Thread t = new Thread()
 				{
-					try
+					public void run()
 					{
-						RootTools.sendShell("rm " + context.getFilesDir().toString() + "/*", -1);						
+						try
+						{
+							CommandCapture command = new CommandCapture(0, "rm " + context.getFilesDir().toString() + "/*");
+							Shell.startRootShell().add(command).waitForFinish();
+						}
+						catch (Exception ignore) {}
 					}
-					catch (Exception ignore) {}
-				}
-			};
+				};
+				
+				t.start();
+			}
 			
-			t.start();
-		}
-		
-		SharedPreferences sp = context.getSharedPreferences("BusyBox", 0);
-		
-		if (Constants.updateType != 0 && intent.getDataString().contains("stericson.busybox.donate"))
-		{
+			SharedPreferences sp = context.getSharedPreferences("BusyBox", 0);
 			
-			String ticker = "";
-			String title = "Update!";
-
-			if (sp.getBoolean("auto-update", false))
+			if (Constants.updateType != 0 && intent.getDataString().contains("stericson.busybox.donate"))
 			{
-				String[] locations = Common.findBusyBoxLocations(false, true);
-				String location = locations.length > 0 ? Common.findBusyBoxLocations(false, true)[0] : "";
 				
-				if (location == null || location.equals(""))
-					location = "/system/bin";
-				
-				Result result = new Install().install(context, null, Constants.newest, location == null ? "/system/bin" : location , true, false, true);
-				
-				if (result.isSuccess())
+				String ticker = "";
+				String title = "Update!";
+	
+				if (sp.getBoolean("auto-update", false))
 				{
-					title = "Success!";
-					ticker = "Updated/Installed " + Constants.newest;					
+					String[] locations = Common.findBusyBoxLocations(false, true);
+					String location = locations.length > 0 ? Common.findBusyBoxLocations(false, true)[0] : "";
+					
+					if (location == null || location.equals(""))
+						location = "/system/bin";
+					
+					Result result = new Install().install(context, null, Constants.newest, location == null ? "/system/bin" : location , true, false, true);
+					
+					if (result.isSuccess())
+					{
+						title = "Success!";
+						ticker = "Updated/Installed " + Constants.newest;					
+					}
+					else
+					{
+						title = "Failed";
+						ticker = "Update/Install of " + Constants.newest;					
+					}
 				}
 				else
-				{
-					title = "Failed";
-					ticker = "Update/Install of " + Constants.newest;					
+				{			
+					switch (Constants.updateType)
+					{
+						case 1:
+							ticker = "Update available for BusyBox binary!";
+							break;
+						case 2:
+							ticker = "New BusyBox binary available!";
+							break;
+						case 3:
+							ticker = "New binary and updates available!";
+							break;
+					}
 				}
-			}
-			else
-			{			
-				switch (Constants.updateType)
-				{
-					case 1:
-						ticker = "Update available for BusyBox binary!";
-						break;
-					case 2:
-						ticker = "New BusyBox binary available!";
-						break;
-					case 3:
-						ticker = "New binary and updates available!";
-						break;
-				}
-			}
-			
-			String ns = Context.NOTIFICATION_SERVICE;
-			NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(ns);
-	
-			Notification notification = new Notification();
-			notification.icon = R.drawable.icon;
-			notification.when = System.currentTimeMillis();
-			
-			Intent notificationIntent = new Intent(context, MainActivity.class);
-			PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
-	
-			notification.contentIntent = contentIntent;
-			
-			notification.flags |= Notification.FLAG_AUTO_CANCEL;
-	
-			notification.setLatestEventInfo(context, title,
-					ticker, contentIntent);
-			
-			mNotificationManager.notify(1, notification);
-		}			
-	}
-
-	public void jobCallBack(Result result, int id)
-	{
+				
+				String ns = Context.NOTIFICATION_SERVICE;
+				NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(ns);
 		
+				Notification notification = new Notification();
+				notification.icon = R.drawable.icon;
+				notification.when = System.currentTimeMillis();
+				
+				Intent notificationIntent = new Intent(context, MainActivity.class);
+				PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+		
+				notification.contentIntent = contentIntent;
+				
+				notification.flags |= Notification.FLAG_AUTO_CANCEL;
+		
+				notification.setLatestEventInfo(context, title,
+						ticker, contentIntent);
+				
+				mNotificationManager.notify(1, notification);
+			}			
+		}
 	}
-
 }
