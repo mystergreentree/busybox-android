@@ -1,6 +1,7 @@
 package stericson.busybox.donate.listeners;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import stericson.busybox.donate.R;
@@ -9,7 +10,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 
+import com.stericson.RootTools.Command;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 
 public class AppletCheck implements OnItemSelectedListener {
 
@@ -39,7 +42,7 @@ public class AppletCheck implements OnItemSelectedListener {
 			if (RootTools.findBinary(applet))
 			{
 				appletInfo += activity.getString(R.string.foundhere) + " " + RootTools.lastFoundBinaryPaths.get(0);
-				String symlink = RootTools.getSymlink(new File(RootTools.lastFoundBinaryPaths.get(0) + "/" + applet));
+				String symlink = RootTools.getSymlink(RootTools.lastFoundBinaryPaths.get(0) + "/" + applet);
 				if (symlink.equals(""))
 				{
 					appletInfo += "\n" + activity.getString(R.string.notsymlinked);
@@ -58,7 +61,20 @@ public class AppletCheck implements OnItemSelectedListener {
 			{
 				try
 				{
-					List<String> result = RootTools.sendShell("busybox " + applet + " --help", -1);
+					final List<String> result = new ArrayList<String>();
+					
+					Command command = new Command(0, "busybox " + applet + " --help")
+					{
+						@Override
+						public void commandFinished(int arg0) {}
+
+						@Override
+						public void output(int arg0, String arg1)
+						{
+							result.add(arg1);
+						}
+					};
+					Shell.startRootShell().add(command).waitForFinish();
 					
 					for (String info : result)
 					{

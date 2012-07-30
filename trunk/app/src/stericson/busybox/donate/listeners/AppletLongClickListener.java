@@ -1,5 +1,6 @@
 package stericson.busybox.donate.listeners;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import stericson.busybox.donate.R;
@@ -9,7 +10,9 @@ import android.view.View.OnLongClickListener;
 import android.widget.CheckBox;
 import android.widget.Toast;
 
+import com.stericson.RootTools.Command;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 
 public class AppletLongClickListener implements OnLongClickListener {
 
@@ -27,7 +30,21 @@ public class AppletLongClickListener implements OnLongClickListener {
 		{
 			try
 			{
-				List<String> result = RootTools.sendShell("busybox " + applet.getText().toString() + " --help", -1);
+				final List<String> result = new ArrayList<String>();
+				
+				Command command = new Command(0, "busybox " + applet.getText().toString() + " --help")
+				{
+					@Override
+					public void commandFinished(int arg0) {}
+
+					@Override
+					public void output(int arg0, String arg1)
+					{
+						result.add(arg1);
+					}
+				};
+				Shell.startRootShell().add(command).waitForFinish();
+
 				String appletInfo = "";
 				
 				for (String info : result)

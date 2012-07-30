@@ -11,7 +11,9 @@ import android.os.Environment;
 import android.widget.AdapterView;
 import android.widget.TextView;
 
+import com.stericson.RootTools.CommandCapture;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 
 public class InstallAppletJob extends AsyncJob<Result>
 {
@@ -40,6 +42,8 @@ public class InstallAppletJob extends AsyncJob<Result>
 		
 		this.publishProgress("Preparing System...");
 
+		CommandCapture command;
+		
 		try
 		{
 			if (RootTools.remount("/system", "rw"))
@@ -47,14 +51,13 @@ public class InstallAppletJob extends AsyncJob<Result>
 
 				//ALWAYS run this, I don't care if it does exist...I want to always make sure it is there.
 				Common.extractResources(activity, "toolbox", Environment.getExternalStorageDirectory() + "/toolbox-stericson");
-				
-				String[] commands = {
-						"dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
-						"chmod 0755 " + toolbox
-						};
+								
 				try 
 				{
-					RootTools.sendShell(commands, 0, -1);
+					command = new CommandCapture(0, 
+							"dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
+							"chmod 0755 " + toolbox);
+					Shell.startRootShell().add(command).waitForFinish();
 				} 
 				catch (Exception e) {}
 
@@ -65,25 +68,22 @@ public class InstallAppletJob extends AsyncJob<Result>
 
 					Common.extractResources(activity, "reboot", Environment.getExternalStorageDirectory() + "/reboot-stericson");
 	
-					commands = new String[] {
+					command = new CommandCapture(0, 
 							toolbox + " dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
 							"dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
 							toolbox + " chmod 0755 /system/bin/reboot",
-							"chmod 0755 /system/bin/reboot"};
-	
-					RootTools.sendShell(commands, 0, -1);
+							"chmod 0755 /system/bin/reboot");
+					Shell.startRootShell().add(command).waitForFinish();
 				}
 			}	
 	
 			Common.extractResources(activity, "1.19.4", Environment.getExternalStorageDirectory() + "/busybox-stericson");
 				
-			String[] commands = {};
-
 			this.publishProgress("Installing " + applet + "...");
 
 			if (!RootTools.isBusyboxAvailable())
 			{
-				commands = new String[] { 
+				command = new CommandCapture(0, 
 						"toolbox rm /system/xbin/" + applet,
 						"rm /system/xbin/" + applet,
 						toolbox + " dd if=" + Environment.getExternalStorageDirectory() + "/busybox-stericson of=/data/local/busybox",
@@ -95,24 +95,23 @@ public class InstallAppletJob extends AsyncJob<Result>
 						"toolbox chmod 0755 /system/xbin/" + applet,
 						"chmod 0755 /system/xbin/" + applet,
 						"toolbox rm /data/local/busybox",
-						"rm /data/local/busybox"
-						};
+						"rm /data/local/busybox");
 			}
 			else
 			{
 				String location = Common.findBusyBoxLocations(false, true)[0];
-				
-				commands = new String[] { 
+
+				command = new CommandCapture(0, 
 						"toolbox rm /system/xbin/" + applet,
 						"rm /system/xbin/" + applet,
 						"toolbox ln " + location + "busybox /system/xbin/" + applet,
 						"ln " + location + "busybox /system/xbin/" + applet,
 						"toolbox chmod 0755 /system/xbin/" + applet,
-						"chmod 0755 /system/xbin/" + applet
-						};				
+						"chmod 0755 /system/xbin/" + applet);
+
 			}
 			
-			RootTools.sendShell(commands, 0, -1);
+			Shell.startRootShell().add(command).waitForFinish();
 			
 			File file = new File("/system/xbin/" + applet);
 			if (file.exists()) {

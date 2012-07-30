@@ -6,12 +6,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import android.content.Context;
 
+import com.stericson.RootTools.Command;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 
 public class Common
 {
@@ -70,9 +74,26 @@ public class Common
 	
 	public static String getSingleBusyBoxPath()
 	{
+		final List<String> paths = new ArrayList<String>();
+
 		try
 		{
-			for (String path : RootTools.sendShell("busybox which busybox", -1))
+			Command command = new Command(0, "busybox which busybox")
+			{
+	
+				@Override
+				public void commandFinished(int arg0) {}
+	
+				@Override
+				public void output(int arg0, String arg1)
+				{
+					paths.add(arg1);
+				}
+				
+			};
+			Shell.startRootShell().add(command).waitForFinish();
+		
+			for (String path : paths)
 			{
 				if (path.startsWith("/"))
 				{
@@ -119,7 +140,7 @@ public class Common
 			for (String paths : RootTools.getPath()) {
 				File file = new File(paths + "/busybox");
 				if (file.exists()) {
-					String symlink = RootTools.getSymlink(new File(paths + "/busybox"));
+					String symlink = RootTools.getSymlink(paths + "/busybox");
 					
 					if (includeSymlinks || symlink.equals(""))
 					{
@@ -153,5 +174,4 @@ public class Common
 
 		return locations;
 	}
-
 }

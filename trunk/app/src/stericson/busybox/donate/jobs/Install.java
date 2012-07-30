@@ -1,6 +1,8 @@
 package stericson.busybox.donate.jobs;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import stericson.busybox.donate.App;
 import stericson.busybox.donate.Common;
@@ -10,7 +12,9 @@ import stericson.busybox.donate.domain.Result;
 import android.content.Context;
 import android.os.Environment;
 
+import com.stericson.RootTools.CommandCapture;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 
 public class Install
 {
@@ -22,6 +26,8 @@ public class Install
 
 		Result result = new Result();
 		result.setSuccess(true);
+		
+		CommandCapture command;
 
 		if (!silent)
 			ij.publishCurrentProgress("Checking System...");
@@ -52,18 +58,16 @@ public class Install
 				//ALWAYS run this, I don't care if it does exist...I want to always make sure it is there.
 				Common.extractResources(activity, "toolbox", Environment.getExternalStorageDirectory() + "/toolbox-stericson");
 				
-				String[] commands = {
-						"dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
-						"/system/bin/toolbox dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
-						"chmod 0755 " + toolbox,
-						"/system/bin/toolbox chmod 0755 " + toolbox
-						};
 				try 
 				{
-					RootTools.sendShell(commands, 0, -1);
+					command = new CommandCapture(0, 
+							"dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
+							"/system/bin/toolbox dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
+							"chmod 0755 " + toolbox,
+							"/system/bin/toolbox chmod 0755 " + toolbox);
+					Shell.startRootShell().add(command).waitForFinish();
 				} 
 				catch (Exception ignore) {}
-
 				
 				if (!new File("/system/bin/reboot").exists())
 				{
@@ -71,16 +75,15 @@ public class Install
 						ij.publishCurrentProgress("Adding reboot...");
 
 					Common.extractResources(activity, "reboot", Environment.getExternalStorageDirectory() + "/reboot-stericson");
-	
-					commands = new String[] {
+		
+					command = new CommandCapture(0, 
 							toolbox + " dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
 							"/system/bin/toolbox dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
 							"dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
 							toolbox + " chmod 0755 /system/bin/reboot",
 							"/system/bin/toolbox chmod 0755 /system/bin/reboot",
-							"chmod 0755 /system/bin/reboot"};
-	
-					RootTools.sendShell(commands, 0, -1);
+							"chmod 0755 /system/bin/reboot");
+					Shell.startRootShell().add(command).waitForFinish();
 				}
 			}	
 	
@@ -96,12 +99,10 @@ public class Install
 				path = path + "/";
 			}
 			
-			String[] commands = {};
-
 			if (!silent)
 				ij.publishCurrentProgress("Installing Busybox...");
 
-			commands = new String[] {
+			command = new CommandCapture(0, 
 					toolbox + " rm " + path + "busybox",
 					"/system/bin/toolbox rm " + path + "busybox",
 					"rm " + path + "busybox",
@@ -110,13 +111,12 @@ public class Install
 					"/system/bin/toolbox dd if=" + Environment.getExternalStorageDirectory() + "/busybox-stericson of=" + path + "busybox",
 					toolbox + " chmod 0755 " + path + "busybox",
 					"/system/bin/toolbox chmod 0755 " + path + "busybox",
-					"chmod 0755 " + path + "busybox"};
-
-			RootTools.sendShell(commands, 0, -1);
-
+					"chmod 0755 " + path + "busybox");
+			Shell.startRootShell().add(command).waitForFinish();
+			
 			if (!new File(path + "busybox").exists())
 			{
-				commands = new String[] {
+				command = new CommandCapture(0, 
 						"cat " + Environment.getExternalStorageDirectory() + "/busybox-stericson > " + path + "busybox",
 						"cp " + Environment.getExternalStorageDirectory() + "/busybox-stericson " + path + "busybox",
 						toolbox + " cat " + Environment.getExternalStorageDirectory() + "/busybox-stericson > " + path + "busybox",
@@ -125,9 +125,8 @@ public class Install
 						"/system/bin/toolbox cat " + Environment.getExternalStorageDirectory() + "/busybox-stericson > " + path + "busybox",
 						"/system/bin/toolbox cp " + Environment.getExternalStorageDirectory() + "/busybox-stericson " + path + "busybox",
 						"/system/bin/toolbox chmod 0755 " + path + "busybox",
-						"chmod 0755 " + path + "busybox"};
-				
-				RootTools.sendShell(commands, 0, -1);
+						"chmod 0755 " + path + "busybox");
+				Shell.startRootShell().add(command).waitForFinish();
 
 			}
 
@@ -135,10 +134,8 @@ public class Install
 			{
 				if (App.getInstance().getItemList() == null || !App.getInstance().isSmartInstall())
 				{
-                    commands = new String[] {
-                                    path + "busybox --install -s " + path };
-
-					RootTools.sendShell(commands, 0, -1);
+    				command = new CommandCapture(0, path + "busybox --install -s " + path);
+    				Shell.startRootShell().add(command).waitForFinish();
 				}
 				else
 				{
@@ -150,15 +147,14 @@ public class Install
 							if (!silent)
 								ij.publishCurrentProgress("Setting up " + item.getApplet());
 	
-							commands = new String[]{
+		    				command = new CommandCapture(0, 
 									toolbox + " rm " + path + item.getApplet(),
 									"/system/bin/toolbox rm " + path + item.getApplet(),
 									"rm " + path + item.getApplet(),
 									toolbox + " ln -s " + path + "busybox " + path + item.getApplet(),
 									"/system/bin/toolbox ln -s " + path + "busybox " + path + item.getApplet(),
-									"ln -s " + path + "busybox " + path + item.getApplet()};
-							
-							RootTools.sendShell(commands, 0, -1);
+									"ln -s " + path + "busybox " + path + item.getApplet());
+		    				Shell.startRootShell().add(command).waitForFinish();
 							
 							//clean up
 							if (clean)
@@ -168,18 +164,19 @@ public class Install
 										ij.publishCurrentProgress("Cleaning up...");
 									
 									RootTools.findBinary(item.getApplet());
-									for (String applet_path : RootTools.lastFoundBinaryPaths)
+									List<String> paths = new ArrayList<String>();
+									paths.addAll(RootTools.lastFoundBinaryPaths);
+									for (String applet_path : paths)
 									{
 										if (!path.contains(applet_path))
 										{
 											RootTools.log("Cleaning up Applet: " + item.getApplet());
-											commands = new String[] {
+											
+						    				command = new CommandCapture(0, 
 													toolbox + " rm " + applet_path + "/" + item.getApplet(),
 													 "/system/bin/toolbox rm " + applet_path + "/" + item.getApplet(),
-													"rm " + applet_path + "/" + item.getApplet()
-											};
-											
-											RootTools.sendShell(commands, 0, -1);
+													"rm " + applet_path + "/" + item.getApplet());
+						    				Shell.startRootShell().add(command).waitForFinish();
 										}
 										else
 										{
@@ -194,10 +191,12 @@ public class Install
 						{
 							if (!silent)
 								ij.publishCurrentProgress("Removing " + item.getApplet());
-	
-							RootTools.sendShell(new String[] {  toolbox + " rm " + item.getAppletPath() + "/" + item.getApplet(),
-																"/system/bin/toolbox rm " + item.getAppletPath() + "/" + item.getApplet(),
-																"rm " + item.getAppletPath() + "/" + item.getApplet()}, 0, -1);
+
+		    				command = new CommandCapture(0, 
+		    						toolbox + " rm " + item.getAppletPath() + "/" + item.getApplet(),
+									"/system/bin/toolbox rm " + item.getAppletPath() + "/" + item.getApplet(),
+									"rm " + item.getAppletPath() + "/" + item.getApplet());		    				
+		    				Shell.startRootShell().add(command).waitForFinish();
 							
 							//clean up
 							if (clean)
@@ -210,13 +209,12 @@ public class Install
 									for (String applet_path : RootTools.lastFoundBinaryPaths)
 									{
 										RootTools.log("Cleaning up Applet: " + item.getApplet());
-										commands = new String[] {
+
+										command = new CommandCapture(0, 
 												toolbox + " rm " + applet_path + "/" + item.getApplet(),
 												"/system/bin/toolbox rm " + applet_path + "/" + item.getApplet(),
-												"rm " + applet_path + "/" + item.getApplet()
-										};
-											
-										RootTools.sendShell(commands, 0, -1);
+												"rm " + applet_path + "/" + item.getApplet());		    				
+					    				Shell.startRootShell().add(command).waitForFinish();
 									}
 								}
 								catch (Exception ignore) {}
@@ -239,25 +237,17 @@ public class Install
 							//Removing old copies
 							//TODO this may need to be moved, in the future this will become a lot larger.
 							RootTools.remount(locations[i], "RW");
-							final String[] command = {
+
+							command = new CommandCapture(0, 
 									toolbox + " rm " + locations[i] + "busybox",
 									"/system/bin/toolbox rm " + locations[i] + "busybox",
 									"rm " + locations[i] + "busybox",
-									toolbox + " ln -s "
-											+ path
-											+ "busybox "
-											+ locations[i],
-									"/system/bin/toolbox ln -s "
-											+ path
-											+ "busybox "
-											+ locations[i],
-									"ln -s " + path
-											+ "busybox "
-											+ locations[i]
-							};
-
-							RootTools.sendShell(command, 0, -1);
+									toolbox + " ln -s " + path + "busybox " + locations[i],
+									"/system/bin/toolbox ln -s " + path + "busybox " + locations[i],
+									"ln -s " + path + "busybox " + locations[i]);
 							
+		    				Shell.startRootShell().add(command).waitForFinish();
+		    				
 							if (new File(locations[i] + "busybox").exists()) {
 								RootTools.log("BusyBox Installer", "The file was not removed: " + locations[i] + "busybox");
 							}

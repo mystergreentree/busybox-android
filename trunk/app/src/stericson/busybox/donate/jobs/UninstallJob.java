@@ -10,7 +10,9 @@ import stericson.busybox.donate.domain.Result;
 import android.os.Environment;
 import android.widget.TextView;
 
+import com.stericson.RootTools.CommandCapture;
 import com.stericson.RootTools.RootTools;
+import com.stericson.RootTools.Shell;
 import com.stericson.RootTools.Symlink;
 
 public class UninstallJob extends AsyncJob<Result>
@@ -33,6 +35,8 @@ public class UninstallJob extends AsyncJob<Result>
 
 		this.publishProgress("Checking System...");
 		
+		CommandCapture command;
+		
 		try 
 		{
 			if (!RootTools.fixUtils(new String[] {"ls", "rm", "ln", "dd", "chmod", "mount"}))
@@ -52,7 +56,7 @@ public class UninstallJob extends AsyncJob<Result>
 		{
 			this.publishProgress("preparing system...");
 			
-			String symlink = RootTools.getSymlink(new File("/system/bin/sh"));
+			String symlink = RootTools.getSymlink("/system/bin/sh");
 			
 			if (symlink.toLowerCase().contains("busybox"))
 			{
@@ -62,7 +66,7 @@ public class UninstallJob extends AsyncJob<Result>
 			}
 			else if (symlink.toLowerCase().contains("bash"))
 			{
-				symlink = RootTools.getSymlink(new File("/system/bin/bash"));
+				symlink = RootTools.getSymlink("/system/bin/bash");
 
 				if (symlink.toLowerCase().contains("busybox"))
 				{
@@ -74,13 +78,13 @@ public class UninstallJob extends AsyncJob<Result>
 			
 			Common.extractResources(activity, "toolbox", Environment.getExternalStorageDirectory() + "/toolbox-stericson");
 			
-			String[] commands = {
-					"dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
-					"chmod 0755 /data/local/toolbox"
-					};
 			try 
 			{
-				RootTools.sendShell(commands, 0, -1);
+				command = new CommandCapture(0,
+						"dd if=" + Environment.getExternalStorageDirectory() + "/toolbox-stericson of=" + toolbox,
+						"chmod 0755 /data/local/toolbox");
+				Shell.startRootShell().add(command).waitForFinish();
+				
 			} 
 			catch (Exception e) {}
 
@@ -88,51 +92,49 @@ public class UninstallJob extends AsyncJob<Result>
 			{
 				this.publishProgress("Creating required symlinks...");
 
-				//Good to Link the files
-				String[] commands_1 = {
-						toolbox + " rm /system/bin/chmod",
-						toolbox + " rm /system/xbin/chmod",
-						toolbox + " ln -s " + toolbox + " /system/bin/chmod",
-						toolbox + " rm /system/bin/ls",
-						toolbox + " rm /system/xbin/ls",
-						toolbox + " ln -s " + toolbox + " /system/bin/ls",
-						toolbox + " rm /system/bin/cat",
-						toolbox + " rm /system/xbin/cat",
-						toolbox + " ln -s " + toolbox + " /system/bin/cat",
-						toolbox + " rm /system/bin/ln",
-						toolbox + " rm /system/xbin/ln",
-						toolbox + " ln -s " + toolbox + " /system/bin/ln",
-						toolbox + " rm /system/bin/df",
-						toolbox + " rm /system/xbin/df",
-						toolbox + " ln -s " + toolbox + " /system/bin/df",
-						toolbox + " rm /system/bin/mount",
-						toolbox + " rm /system/xbin/mount",
-						toolbox + " ln -s " + toolbox + " /system/bin/mount",
-						toolbox + " rm /system/bin/rm",
-						toolbox + " rm /system/xbin/rm",
-						toolbox + " ln -s " + toolbox + " /system/bin/rm",
-						toolbox + " rm /system/bin/ps",
-						toolbox + " rm /system/xbin/ps",
-						toolbox + " ln -s " + toolbox + " /system/bin/ps",
-						toolbox + " rm /system/bin/mkdir",
-						toolbox + " rm /system/xbin/mkdir",
-						toolbox + " ln -s " + toolbox + " /system/bin/mkdir",
-						toolbox + " rm /system/bin/kill",
-						toolbox + " rm /system/xbin/kill",
-						toolbox + " ln -s " + toolbox + " /system/bin/kill",
-						toolbox + " rm /system/bin/id",
-						toolbox + " rm /system/xbin/id",
-						toolbox + " ln -s " + toolbox + " /system/bin/id",
-						toolbox + " rm /system/bin/dd",
-						toolbox + " rm /system/xbin/dd",
-						toolbox + " ln -s " + toolbox + " /system/bin/dd",
-						toolbox + " rm /system/bin/insmod",
-						toolbox + " rm /system/xbin/insmod",
-						toolbox + " ln -s " + toolbox + " /system/bin/insmod"
-						};
 				try 
 				{
-					RootTools.sendShell(commands_1, 0, -1);
+					command = new CommandCapture(0,
+							toolbox + " rm /system/bin/chmod",
+							toolbox + " rm /system/xbin/chmod",
+							toolbox + " ln -s " + toolbox + " /system/bin/chmod",
+							toolbox + " rm /system/bin/ls",
+							toolbox + " rm /system/xbin/ls",
+							toolbox + " ln -s " + toolbox + " /system/bin/ls",
+							toolbox + " rm /system/bin/cat",
+							toolbox + " rm /system/xbin/cat",
+							toolbox + " ln -s " + toolbox + " /system/bin/cat",
+							toolbox + " rm /system/bin/ln",
+							toolbox + " rm /system/xbin/ln",
+							toolbox + " ln -s " + toolbox + " /system/bin/ln",
+							toolbox + " rm /system/bin/df",
+							toolbox + " rm /system/xbin/df",
+							toolbox + " ln -s " + toolbox + " /system/bin/df",
+							toolbox + " rm /system/bin/mount",
+							toolbox + " rm /system/xbin/mount",
+							toolbox + " ln -s " + toolbox + " /system/bin/mount",
+							toolbox + " rm /system/bin/rm",
+							toolbox + " rm /system/xbin/rm",
+							toolbox + " ln -s " + toolbox + " /system/bin/rm",
+							toolbox + " rm /system/bin/ps",
+							toolbox + " rm /system/xbin/ps",
+							toolbox + " ln -s " + toolbox + " /system/bin/ps",
+							toolbox + " rm /system/bin/mkdir",
+							toolbox + " rm /system/xbin/mkdir",
+							toolbox + " ln -s " + toolbox + " /system/bin/mkdir",
+							toolbox + " rm /system/bin/kill",
+							toolbox + " rm /system/xbin/kill",
+							toolbox + " ln -s " + toolbox + " /system/bin/kill",
+							toolbox + " rm /system/bin/id",
+							toolbox + " rm /system/xbin/id",
+							toolbox + " ln -s " + toolbox + " /system/bin/id",
+							toolbox + " rm /system/bin/dd",
+							toolbox + " rm /system/xbin/dd",
+							toolbox + " ln -s " + toolbox + " /system/bin/dd",
+							toolbox + " rm /system/bin/insmod",
+							toolbox + " rm /system/xbin/insmod",
+							toolbox + " ln -s " + toolbox + " /system/bin/insmod");
+					Shell.startRootShell().add(command).waitForFinish();
 				} 
 				catch (Exception e) {
 					RootTools.log(e.toString());
@@ -165,7 +167,10 @@ public class UninstallJob extends AsyncJob<Result>
 										
 										this.publishProgress("removing symlink for " + link.getFile().toString() + " in " + path);
 		
-										RootTools.sendShell(toolbox + " rm " + path + "/" + link.getFile().toString(), -1);
+										command = new CommandCapture(0,
+												toolbox + " rm " + path + "/" + link.getFile().toString());
+										Shell.startRootShell().add(command).waitForFinish();
+
 									}
 								}
 								
@@ -179,7 +184,10 @@ public class UninstallJob extends AsyncJob<Result>
 							for (String binaryPath : RootTools.lastFoundBinaryPaths)
 							{
 								RootTools.remount(binaryPath, "rw");
-								RootTools.sendShell(toolbox + " rm " + binaryPath + "/busybox", -1);
+								command = new CommandCapture(0,
+										toolbox + " rm " + binaryPath + "/busybox");
+								Shell.startRootShell().add(command).waitForFinish();
+
 								RootTools.remount(binaryPath, "ro");
 							}
 						}
@@ -198,13 +206,12 @@ public class UninstallJob extends AsyncJob<Result>
 			{
 				Common.extractResources(this.activity, "reboot", Environment.getExternalStorageDirectory() + "/reboot-stericson");
 
-				String[] commands_0 = {
-						toolbox + " dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
-						toolbox + " chmod 0755 /system/bin/reboot"
-						};
 				try 
 				{
-					RootTools.sendShell(commands_0, 0, -1);
+					command = new CommandCapture(0,
+							toolbox + " dd if=" + Environment.getExternalStorageDirectory() + "/reboot-stericson of=/system/bin/reboot",
+							toolbox + " chmod 0755 /system/bin/reboot");
+					Shell.startRootShell().add(command).waitForFinish();
 				} 
 				catch (Exception e) {}
 			}

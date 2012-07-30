@@ -11,12 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import stericson.busybox.donate.Common;
+import stericson.busybox.donate.R.string;
 import stericson.busybox.donate.domain.Item;
 import stericson.busybox.donate.domain.Result;
 import stericson.busybox.donate.services.DBService;
 import android.content.Context;
 import android.os.Environment;
 
+import com.stericson.RootTools.Command;
+import com.stericson.RootTools.CommandCapture;
 import com.stericson.RootTools.RootTools;
 
 public class AppletInformation
@@ -29,8 +32,7 @@ public class AppletInformation
 
 	
 	public Result getAppletInformation(Context context, boolean updating, GatherAppletInformation gai, String [] applets)
-	{
-
+	{		
 		storagePath = context.getFilesDir().toString();
 		dbService = new DBService(context);
 		itemList = new ArrayList<Item>();
@@ -38,23 +40,20 @@ public class AppletInformation
 		this.extractResources(context, Environment.getExternalStorageDirectory() + "/stericson-ls");
 		try
 		{
-			RootTools.useRoot = true;
-
 			RootTools.fixUtils(new String[] {"dd", "chmod"});
-			RootTools.sendShell(new String[] {"dd if=" + Environment.getExternalStorageDirectory() + "/stericson-ls of=/data/local/ls", "chmod 0777 /data/local", "chmod 0755 /data/local/ls" }, 0, -1);
+			CommandCapture command = new CommandCapture(0, "dd if=" + Environment.getExternalStorageDirectory() + "/stericson-ls of=/data/local/ls", "chmod 0777 /data/local", "chmod 0755 /data/local/ls");
+			RootTools.getShell(true).add(command).waitForFinish();
 		}
 		catch (Exception ignore) {}
 		
-		RootTools.useRoot = false;
-				
 		if (!dbService.isReady())
 		{
 			//Backup current Busybox versions.
 			for (String path : Common.findBusyBoxLocations(false, false))
 			{
-				if (!new File(storagePath + "/" + this.getInode(path + "busybox")).exists())
+				if (!new File(storagePath + "/" + RootTools.getInode(path + "busybox")).exists())
 				{
-					this.makeBackup("busybox", path, this.getInode(path + "busybox"));
+					this.makeBackup("busybox", path, RootTools.getInode(path + "busybox"));
 				}
 			}
 		}
@@ -88,10 +87,9 @@ public class AppletInformation
 				}
 				else
 				{
-					File file = new File(item.getAppletPath() + "/" + applet);
-					if (file.exists())
+					if (RootTools.exists(item.getAppletPath() + "/" + applet))
 					{
-						String symlink = RootTools.getSymlink(file);
+						String symlink = RootTools.getSymlink(item.getAppletPath() + "/" + applet);
 						if (!symlink.equals(item.getSymlinkedTo()))
 						{
 							item.setSymlinkedTo(symlink);
@@ -121,11 +119,14 @@ public class AppletInformation
 			
 			item.setFound(true);
 			
-			for (String paths : RootTools.lastFoundBinaryPaths)
+			List<String> paths = new ArrayList<String>();
+			paths.addAll(RootTools.lastFoundBinaryPaths);
+			
+			for (String path : RootTools.lastFoundBinaryPaths)
 			{
 				if (paths.contains("/system/bin"))
 				{
-					item.setAppletPath(paths);
+					item.setAppletPath(path);
 				}
 			}
 			
@@ -134,7 +135,7 @@ public class AppletInformation
 				item.setAppletPath(RootTools.lastFoundBinaryPaths.get(0));
 			}
 						
-			String symlink = RootTools.getSymlink(new File(item.getAppletPath() + "/" + applet));
+			String symlink = RootTools.getSymlink(item.getAppletPath() + "/" + applet);
 			
 			item.setSymlinkedTo(symlink);
 			
@@ -142,7 +143,7 @@ public class AppletInformation
 			{
 				if (item.getSymlinkedTo().trim().toLowerCase().endsWith("busybox"))	
 				{
-					item.setInode(getInode(symlink));
+					item.setInode(RootTools.getInode(symlink));
 
 					if (!new File(storagePath + "/" + item.getInode()).exists())
 					{
@@ -158,10 +159,10 @@ public class AppletInformation
 			}
 			else if (item.getSymlinkedTo().equals(""))
 			{
-				String inode = getInode(item.getAppletPath() + "/" + applet);
+				String inode = RootTools.getInode(item.getAppletPath() + "/" + applet);
 				for (String path : Common.findBusyBoxLocations(false, false))
 				{
-					if (inode.equals(getInode(path + "busybox")))
+					if (inode.equals(RootTools.getInode(path + "busybox")))
 					{
 						item.setIshardlink(true);
 						item.setBackupHardlink(path + "busybox");
@@ -195,7 +196,22 @@ public class AppletInformation
 			{
 				try
 				{
-					List<String> result = RootTools.sendShell("busybox " + applet + " --help", -1);
+					final List<String> result = new ArrayList<String>();
+					Command command = new Command(0, "busybox " + applet + " --help")
+					{
+
+						@Override
+						public void commandFinished(int arg0) {}
+
+						@Override
+						public void output(int arg0, String arg1)
+						{
+							result.add(arg1);
+						}
+						
+					};
+					RootTools.getShell(true).add(command).waitForFinish();
+					
 					String appletInfo = "";
 					
 					for (String info : result)
@@ -278,25 +294,6 @@ public class AppletInformation
 			catch (Exception e) {}
 		}
 	}
-	
-    public String getInode(String file)
-    {
-    	try
-    	{
-	    	for (String line : RootTools.sendShell("/data/local/ls -i " + file, -1))
-	    	{
-	    		if (Character.isDigit((char) line.trim().substring(0, 1).toCharArray()[0]))
-	    		{
-	    			return line.trim().split(" ")[0].toString();
-	    		}
-	    	}
-	    	return "";
-    	}
-    	catch (Exception ignore)
-    	{
-    		return "";
-    	}
-    }
     
 	/**
 	 * Used to extract certain assets we may need. Can be used by any class to
