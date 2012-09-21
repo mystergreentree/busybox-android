@@ -73,7 +73,7 @@ public abstract class AsyncJob<E> extends AsyncTask<Void, Object, JobResult<E>>
 	        View layout = inflater.inflate(R.layout.popupwindow_spinner, null); 
 	        App.getInstance().setPopupView(layout);
 
-	        popupWindow = new PopupWindow(layout, LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+	        popupWindow = new PopupWindow(layout, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
 	        context.findViewById(R.id.main).post(new Runnable() {
         	   public void run() {

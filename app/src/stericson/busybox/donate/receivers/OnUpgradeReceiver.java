@@ -21,6 +21,7 @@ import com.stericson.RootTools.Shell;
 public class OnUpgradeReceiver extends BroadcastReceiver
 {
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onReceive(final Context context, Intent intent)
 	{
@@ -63,17 +64,23 @@ public class OnUpgradeReceiver extends BroadcastReceiver
 					if (location == null || location.equals(""))
 						location = "/system/bin";
 					
-					Result result = new Install().install(context, null, Constants.newest, location == null ? "/system/bin" : location , true, false, true);
+					if (Common.setupBusybox(context, Constants.newest, false)) {
+						Result result = new Install().install(context, null, Constants.newest, location == null ? "/system/bin" : location , true, false, true);
 					
-					if (result.isSuccess())
-					{
-						title = "Success!";
-						ticker = "Updated/Installed " + Constants.newest;					
+						if (result.isSuccess())
+						{
+							title = "Success!";
+							ticker = "Updated/Installed " + Constants.newest;					
+						}
+						else
+						{
+							title = "Failed";
+							ticker = "Update/Install of " + Constants.newest;					
+						}
 					}
-					else
-					{
+					else {
 						title = "Failed";
-						ticker = "Update/Install of " + Constants.newest;					
+						ticker = "Update/Install of " + Constants.newest;
 					}
 				}
 				else

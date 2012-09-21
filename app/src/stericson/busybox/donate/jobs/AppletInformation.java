@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import stericson.busybox.donate.Common;
-import stericson.busybox.donate.R.string;
+import stericson.busybox.donate.R;
 import stericson.busybox.donate.domain.Item;
 import stericson.busybox.donate.domain.Result;
 import stericson.busybox.donate.services.DBService;
@@ -32,11 +32,25 @@ public class AppletInformation
 
 	
 	public Result getAppletInformation(Context context, boolean updating, GatherAppletInformation gai, String [] applets)
-	{		
+	{	
+		Result result = new Result();
+		result.setSuccess(true);
+
 		storagePath = context.getFilesDir().toString();
 		dbService = new DBService(context);
 		itemList = new ArrayList<Item>();
-				
+		
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception e)
+		{
+			result.setSuccess(false);
+			result.setError(context.getString(R.string.shell_error));
+		    return result; 
+		}
+		
 		this.extractResources(context, Environment.getExternalStorageDirectory() + "/stericson-ls");
 		try
 		{
@@ -65,9 +79,6 @@ public class AppletInformation
 				closeDb();
 				return null;
 			}
-			
-			if (!updating && gai != null)
-				gai.publishCurrentProgress(applet);
 
 			if (updating || !dbService.isReady())
 			{
@@ -102,13 +113,14 @@ public class AppletInformation
 					}
 				}
 			}
+			
+			if (!updating && gai != null)
+				gai.publishCurrentProgress(String.valueOf(((float) 100 / applets.length)));
 		}
 		
 		itemList = dbService.getApplets();
-		
-		Result result = new Result();
+				
 		result.setItemList(itemList);
-		result.setSuccess(true);
 	    return result; 
 	}
 	
@@ -124,15 +136,16 @@ public class AppletInformation
 			
 			for (String path : RootTools.lastFoundBinaryPaths)
 			{
-				if (paths.contains("/system/bin"))
+				if (path.contains("/system/bin"))
 				{
 					item.setAppletPath(path);
+					break;
 				}
 			}
 			
 			if (item.getAppletPath().equals(""))
 			{
-				item.setAppletPath(RootTools.lastFoundBinaryPaths.get(0));
+				item.setAppletPath(paths.get(0));
 			}
 						
 			String symlink = RootTools.getSymlink(item.getAppletPath() + "/" + applet);
@@ -180,8 +193,7 @@ public class AppletInformation
 
 				if (!item.isIshardlink())
 				{
-					File file = new File(storagePath + "/" + applet);
-					if (!file.exists())
+					if (!RootTools.exists(storagePath + "/" + applet))
 					{
 						makeBackup(item.getApplet(), item.getAppletPath(), item.getApplet());
 					}
@@ -236,8 +248,6 @@ public class AppletInformation
 					
 		dbService.insertOrUpdateRow(item);
 	}
-	
-	
 	
 	public void makeBackup(String applet, String path, String name)
 	{

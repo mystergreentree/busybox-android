@@ -1,25 +1,34 @@
 package stericson.busybox.donate.Activity;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import stericson.busybox.donate.App;
+import stericson.busybox.donate.Common;
 import stericson.busybox.donate.Constants;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.adapter.PageAdapter;
+import stericson.busybox.donate.custom.DropDownAnim;
+import stericson.busybox.donate.custom.FontableTextView;
 import stericson.busybox.donate.domain.Item;
 import stericson.busybox.donate.domain.Result;
+import stericson.busybox.donate.fileexplorer.FileList;
 import stericson.busybox.donate.interfaces.CallBack;
 import stericson.busybox.donate.interfaces.Choice;
 import stericson.busybox.donate.jobs.GatherAppletInformation;
+import stericson.busybox.donate.jobs.GetAvailableAppletsJob;
 import stericson.busybox.donate.jobs.InitialChecks;
 import stericson.busybox.donate.jobs.InstallJob;
+import stericson.busybox.donate.jobs.PrepareBinaryJob;
 import stericson.busybox.donate.jobs.RestoreBackup;
 import stericson.busybox.donate.jobs.UninstallJob;
 import stericson.busybox.donate.listeners.PageChange;
 import stericson.busybox.donate.services.AppletService;
+import stericson.busybox.donate.services.DBService;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -31,7 +40,10 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.stericson.RootTools.Command;
 import com.stericson.RootTools.RootTools;
@@ -39,11 +51,6 @@ import com.stericson.RootTools.Shell;
 import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends BaseActivity implements CallBack, Choice {
-
-	//Constants
-	private static final int UNINSTALL = 0;
-	private static final int INSTALL = 1;
-	private static final int RESTORE = 2;
 
 	private TextView header;
 	private ViewPager pager;
@@ -54,17 +61,17 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 	private Button uninstall;
 	private Button restore;
 	
-	public TextView view1;
-	public TextView view2;
-	
 	//maintains current page position
 	public int position;
 	
 	private String custom = "";
-	private TextView freespace;
 	private boolean installed = false;
 	private boolean clean = false;
 	private ListView listView;
+	
+	private RelativeLayout pb_container;
+	private ProgressBar pb;
+	private FontableTextView pb_msg;
 
 	@Override
 	public void onCreate( Bundle savedInstanceState )
@@ -82,6 +89,9 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 		install = (Button) findViewById(R.id.install);
 		uninstall = (Button) findViewById(R.id.uninstall);
 		restore = (Button) findViewById(R.id.restore);
+		pb_container = (RelativeLayout) findViewById(R.id.progression);
+		pb = (ProgressBar) findViewById(R.id.progression_bar);
+		pb_msg = (FontableTextView) findViewById(R.id.progression_msg);
 		
 	    header = (TextView) findViewById(R.id.header_main);
 		header.setTypeface(tf);
@@ -107,6 +117,147 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 		});
 	}
     
+	protected void onResume() {
+		if (App.getInstance().isChoose())
+		{
+			//The user has returned and we should show the file browser?
+			App.getInstance().setChoose(false);
+			Intent i = new Intent(this, FileList.class);
+			startActivityForResult(i, Constants.CHOOSE);
+		}
+		
+		super.onResume();
+	}
+	
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if (requestCode == Constants.CHOOSE)
+		{
+			if (resultCode == RESULT_OK)
+			{
+				Bundle extras = data.getExtras();
+				String file_chosen = extras.getString("selected");
+				new PrepareBinaryJob(this, file_chosen).execute();
+			}
+			else
+			{
+				App.getInstance().updateVersion(0);
+				updateList();
+			}
+		}
+	}
+	
+	@Override
+	public void choiceCancelled(int id)
+	{
+		switch (id) {
+			case Constants.CUSTOM_VERSION:
+				App.getInstance().updateVersion(0);
+				updateList();
+			break;
+		}
+	}
+	
+	@Override
+	public void choiceMade(boolean choice, int id)
+	{
+		switch (id) {
+			case Constants.UNINSTALL:
+				if (choice)
+				{
+					this.makeChoice(this, Constants.UNINSTALL_CHOICE, R.string.uninstall_type, R.string.uninstall_choice, R.string.smart_uninstall, R.string.normal_uninstall);
+				}	
+			break;
+			
+			case Constants.INSTALL:
+				App.getInstance().setSmartInstall(choice);
+				stopGatherInformation();
+				
+				if (App.getInstance().getVersion() != null && App.getInstance().getPath() != null)
+				{				
+					install.setEnabled(false);
+					new InstallJob(this, App.getInstance().getVersion(), App.getInstance().getPath()).execute();
+				}
+				else
+				{
+					initiatePopupWindow("An unexpected error has occured, please take a screenshot of the application and send it to me at StericDroid@gmail.com", false, this);				
+				}				
+			break;
+			
+			case Constants.NORMAL_INSTALL:
+				if (choice)
+				{
+					App.getInstance().setSmartInstall(false);
+					stopGatherInformation();
+					
+					if (App.getInstance().getVersion() != null && App.getInstance().getPath() != null)
+					{				
+						install.setEnabled(false);
+						new InstallJob(this, App.getInstance().getVersion(), App.getInstance().getPath()).execute();
+					}
+					else
+					{
+						initiatePopupWindow("An unexpected error has occured, please take a screenshot of the application and send it to me at StericDroid@gmail.com", false, this);				
+					}
+				}				
+			break;
+			
+			case Constants.RESTORE:
+				if (choice)
+				{
+					stopGatherInformation();
+					new RestoreBackup(this).execute();
+				}
+			break;
+			
+			case Constants.CUSTOM_VERSION:
+				if (choice)
+				{
+					App.getInstance().setChoose(false);
+					Intent i = new Intent(this, FileList.class);
+					startActivityForResult(i, Constants.CHOOSE);
+				}
+				else
+				{
+					App.getInstance().setChoose(true);
+					Intent i = new Intent(Intent.ACTION_VIEW);
+					i.setData(Uri.parse("https://docs.google.com/folder/d/0B5Amguus3csDakJ5SXhaX045R0U/edit"));
+					startActivity(i);
+				}		
+			break;
+			case Constants.UNINSTALL_CHOICE:
+	    		uninstall.setEnabled(false);
+	    		
+	    		stopGatherInformation();
+
+    			new UninstallJob(MainActivity.this, choice).execute();
+
+				
+			break;
+		}
+	}
+	
+	public void gatherInformation(String[] applets)
+	{
+		Intent intent = new Intent(this, AppletService.class);
+		intent.putExtra("applets", applets);
+
+		//Try to stop an existing service..
+		stopService(intent);
+		
+		//Try to start a new one.
+	    startService(intent);
+	}
+	
+    public void hideProgress()
+    {
+    	DropDownAnim anim = new DropDownAnim(pb_container, Common.getDIP(this, 20), false);
+    	anim.setDuration(500);
+    	pb_container.startAnimation(anim);
+    	
+    	//pb_container.setVisibility(View.GONE);
+    }
+
     public void initiatePager()
     {
     	if (pager == null)
@@ -125,81 +276,25 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 
 	public void install(View v)
 	{
-		if (App.getInstance().getItemList() == null)
-		{
-			stopGatherInformation();
-			
-			if (RootTools.hasEnoughSpaceOnSdCard(1600)) 
-			{			
-				if (App.getInstance().getVersion() != null && App.getInstance().getPath() != null)
-				{				
-					install.setEnabled(false);
-					new InstallJob(this, App.getInstance().getVersion(), App.getInstance().getPath()).execute();
-				}
-				else
-				{
-					initiatePopupWindow("An unexpected error has occured, please take a screenshot of the application and send it to me at StericDroid@gmail.com", false, this);				
-				}
-			}
-			else 
+		if (RootTools.hasEnoughSpaceOnSdCard(1200)) 
+		{			
+			if (App.getInstance().getItemList() == null)
 			{
-				initiatePopupWindow(this.getString(R.string.sdcard), true, this);
-			}	
+				stopGatherInformation();
+
+				this.makeChoice(this, Constants.NORMAL_INSTALL, R.string.install_type, R.string.install_type_custom, R.string.normal_install, R.string.cancel);
+			}
+			else
+			{
+				this.makeChoice(this, Constants.INSTALL, R.string.install_type, R.string.install_type_content, R.string.smart_install, R.string.normal_install);			
+			}
 		}
-		else
+		else 
 		{
-			this.makeChoice(this, INSTALL, R.string.install_type, R.string.install_type_content, R.string.smart_install, R.string.normal_install);			
-		}
+			initiatePopupWindow(this.getString(R.string.sdcard), true, this);
+		}	
 	}
-	
-	public void uninstall(View v)
-	{
-		this.makeChoice(this, UNINSTALL, R.string.careful, R.string.beforeUninstall, R.string.uninstall, R.string.cancel);
-	}
-	
-	public void restore(View v)
-	{
-		this.makeChoice(this, RESTORE, R.string.restore, R.string.beforeRestore, R.string.restore, R.string.cancel);		
-	}
-	
-    public void uninstallDone(Result result)
-    {    
-	    gatherInformation(Constants.appletsString);
-
-    	if (result.isSuccess())
-    	{
-	    	if (pager != null)
-	    		pager.setCurrentItem(2);
-	    	
-	        RootTools.remount("/system", "ro");
-	        
-	        if (!RootTools.isBusyboxAvailable())
-	        {
-	        	initiatePopupWindow(this.getString(R.string.uninstallsuccess), false, this);                     
-	        }
-	        else
-	        {
-	        	initiatePopupWindow(this.getString(R.string.uninstallfailed), false, this);
-	        }  
-    	}
-    	else
-    	{
-        	initiatePopupWindow(result.getError(), false, this);
-    	}
-    };
-
-    public void restoreDone(Result result)
-    {
-    	if (result.isSuccess())
-    	{
-    		this.initiatePopupWindow(getString(R.string.restoreSuccess), false, this);
-    	}
-    	else
-    	{
-    		this.initiatePopupWindow(getString(R.string.restoreErrors), false, this);    		
-    	}
-    }
-    
+	    
 	public void installDone(Result install_result)
 	{
 		String currentVersion = App.getInstance().getCurrentVersion();
@@ -328,7 +423,109 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
     	}
     }
     
-    public void uninstallAppletDone(Result result, int position, AdapterView<?> adapter, String applet)
+
+	public void jobCallBack(Result result, int id) {
+		
+		switch (id) {
+			case InitialChecks.Checks:
+				if (result.getError() != null && !result.getError().equals(""))
+					this.initiatePopupWindow(result.getError(), true, this);
+				else {
+
+					if (!new DBService(this).isReady())
+						initiatePopupWindow("Hello, welcome to BusyBox Pro. \n\n It looks like the initial setup has not be completed yet. The initial setup will take a bit longer than BusyBox free the first time it is run because we are making a backup of your system as well as doing some additional checks on your system. \n\n After this initial setup is complete, startup times should be very fast. \n\n Thanks for your patience.", false, this);
+		
+			    	new GatherAppletInformation(this, false).execute();
+		
+					initiatePager();
+				}
+				break;
+			case GatherAppletInformation.APPLET_INFO:
+				App.getInstance().setItemList(result.getItemList());
+				updateList();
+				
+			    gatherInformation(Constants.appletsString);
+			    
+			    restore.setEnabled(true);
+			    
+		        if (App.getInstance().isInstalled())
+				{
+					uninstall.setEnabled(true);
+				}
+		        break;
+			case PrepareBinaryJob.PREPARE_BINARY:
+				if (result.getError() != null && !result.getError().equals("")) {
+					
+					App.getInstance().updateVersion(0);
+					App.getInstance().setInstallCustom(false);
+					updateList();
+					this.initiatePopupWindow(result.getError(), false, this);
+				}
+				else {
+					new GetAvailableAppletsJob(this).execute();
+					Toast.makeText(this, "BusyBox version " + App.getInstance().getVersion() + " will be installed", Toast.LENGTH_LONG).show();
+				}
+				break;
+				
+			case GetAvailableAppletsJob.AVAIL_APPLETS:
+					updateList();
+				break;
+		}
+	}
+	
+	public void restore(View v)
+	{
+		this.makeChoice(this, Constants.RESTORE, R.string.restore, R.string.beforeRestore, R.string.restore, R.string.cancel);		
+	}
+	
+    public void restoreDone(Result result)
+    {
+    	if (result.isSuccess())
+    	{
+    		this.initiatePopupWindow(getString(R.string.restoreSuccess), false, this);
+    	}
+    	else
+    	{
+    		this.initiatePopupWindow(getString(R.string.restoreErrors), false, this);    		
+    	}
+    }
+
+    public void showProgress()
+    {
+    	pb_container.setVisibility(View.VISIBLE);
+    	DropDownAnim anim = new DropDownAnim(pb_container, Common.getDIP(this, 20), true);
+    	anim.setDuration(500);
+    	pb_container.startAnimation(anim);
+    	
+		pb_msg.setText(pb.getProgress() + this.getString(R.string.loaded));
+    }
+
+    public void stopGatherInformation()
+	{
+		Intent intent = new Intent(this, AppletService.class);
+		
+		//Try to stop an existing service..
+		stopService(intent);
+		
+	}
+	
+	public void toggle_smart(View v)
+	{
+		try
+		{
+			App.getInstance().setToggled(!App.getInstance().isToggled());
+			updateList();
+			
+    		if (App.getInstance().isToggled())
+    			this.initiatePopupWindow(this.getString(R.string.before_tweak), false, this);
+
+    		ImageButton toggle = (ImageButton) pager.findViewById(R.id.toggle_smart);
+    		toggle.setImageDrawable(getResources().getDrawable(App.getInstance().isToggled() ? R.drawable.arrow_up_float : R.drawable.arrow_down_float));
+		}
+		catch (Exception ignore) {}
+	}
+
+	public void uninstallAppletDone(Result result, int position, AdapterView<?> adapter, String applet)
     {
 	    gatherInformation(new String[] {applet});
 
@@ -352,118 +549,38 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 			initiatePopupWindow("Uh Oh! The applet was not uninstalled successfully!", false, this);
     	}
     }
-
-	public void jobCallBack(Result result, int id) {
-		if (id == InitialChecks.Checks)
-		{
-			if (result.getMessage() != null && !result.getMessage().equals(""))
-				this.initiatePopupWindow(result.getMessage(), false, this);
-
-	    	new GatherAppletInformation(this, false).execute();
-
-			initiatePager();
-		}
-		if (id == GatherAppletInformation.APPLET_INFO)
-		{
-			App.getInstance().setItemList(result.getItemList());
-			pager.setAdapter(adapter);
-		    pager.setCurrentItem(position);
-		 
-		    gatherInformation(Constants.appletsString);
-		    
-		    restore.setEnabled(true);
-		    
-			if (RootTools.isBusyboxAvailable())
-			{
-				uninstall.setEnabled(true);
-			}
-		}
-	}
 	
-	@Override
-	public void choiceMade(boolean choice, int id)
+	public void uninstall(View v)
 	{
-		if (id == UNINSTALL)
-		{
-			if (choice)
-			{
-	    		uninstall.setEnabled(false);
-	    		
-	    		stopGatherInformation();
-	    		
-    			new UninstallJob(MainActivity.this).execute();				
-			}
-		}
-		else if (id == INSTALL)
-		{
-			App.getInstance().setSmartInstall(choice);
-			stopGatherInformation();
-			
-			if (RootTools.hasEnoughSpaceOnSdCard(1600)) 
-			{			
-				if (App.getInstance().getVersion() != null && App.getInstance().getPath() != null)
-				{				
-					install.setEnabled(false);
-					new InstallJob(this, App.getInstance().getVersion(), App.getInstance().getPath()).execute();
-				}
-				else
-				{
-					initiatePopupWindow("An unexpected error has occured, please take a screenshot of the application and send it to me at StericDroid@gmail.com", false, this);				
-				}
-			}
-			else 
-			{
-				initiatePopupWindow(this.getString(R.string.sdcard), false, this);
-			}
-		}
-		else if (id == RESTORE)
-		{
-			if (choice)
-			{
-				stopGatherInformation();
-				new RestoreBackup(this).execute();
-			}
-		}
+		this.makeChoice(this, Constants.UNINSTALL, R.string.careful, R.string.beforeUninstall, R.string.uninstall, R.string.cancel);
+	}
+	
+    public void uninstallDone(Result result)
+    {    
+	    gatherInformation(Constants.appletsString);
 
-	}
-	
-	public void gatherInformation(String[] applets)
-	{
-		Intent intent = new Intent(this, AppletService.class);
-		intent.putExtra("applets", applets);
+    	if (result.isSuccess())
+    	{
+	    	if (pager != null)
+	    		pager.setCurrentItem(2);
+	    	
+	        RootTools.remount("/system", "ro");
+	        
+	        if (!App.getInstance().isInstalled())
+	        {
+	        	initiatePopupWindow(this.getString(R.string.uninstallsuccess), false, this);                     
+	        }
+	        else
+	        {
+	        	initiatePopupWindow(this.getString(R.string.uninstallfailed), false, this);
+	        }  
+    	}
+    	else
+    	{
+        	initiatePopupWindow(result.getError(), false, this);
+    	}
+    };
 
-		//Try to stop an existing service..
-		stopService(intent);
-		
-		//Try to start a new one.
-	    startService(intent);
-	}
-	
-	public void stopGatherInformation()
-	{
-		Intent intent = new Intent(this, AppletService.class);
-		
-		//Try to stop an existing service..
-		stopService(intent);
-		
-	}
-	
-	public void toggle_smart(View v)
-	{
-		try
-		{
-			App.getInstance().setToggled(!App.getInstance().isToggled());
-			updateList();
-			
-    		if (App.getInstance().isToggled())
-    			this.initiatePopupWindow("Before you begin tweaking things please be aware that changing the settings and selections for smart install is for advanced users only! \n\n Some binaries found on your system should NOT be replaced by Busybox and doing so can make your device perform in an undesireable manner. The only reason you should tweak the settings below is if you know exactly what you are doing or if you know how to reflash your rom to fix issues that may occur from modifying the selections below.", false, this);
-
-    		ImageButton toggle = (ImageButton) pager.findViewById(R.id.toggle_smart);
-    		toggle.setImageDrawable(getResources().getDrawable(App.getInstance().isToggled() ? R.drawable.arrow_up_float : R.drawable.arrow_down_float));
-		}
-		catch (Exception ignore) {}
-	}
-	
 	public void updateList()
 	{
 		try
@@ -479,16 +596,19 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 		catch(Exception ignore) {}
 	}
 	
-	public void close(View v)
+	public void updateProgress(Float progress)
 	{
-		super.close(v);
+		App.getInstance().setProgress(App.getInstance().getProgress() + progress);
+		pb.setProgress((int) Math.floor((double) App.getInstance().getProgress()));
 		
-		if (!endApplication)
-		{
-
-		}
+		NumberFormat nf = NumberFormat.getInstance();
+        nf.setMaximumFractionDigits(2);            
+        nf.setGroupingUsed(false); 
+        
+		pb_msg.setText(nf.format(App.getInstance().getProgress()) + this.getString(R.string.loaded));
 	}
-	
+    
+    //Getters and Setters
 	public boolean getClean()
 	{
 		return this.clean;
@@ -499,11 +619,6 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 		return this.custom;
 	}
 	
-	public TextView getFreeSpace()
-	{
-		return this.freespace;
-	}
-	
 	public boolean getInstalled()
 	{
 		return this.installed;
@@ -512,11 +627,6 @@ public class MainActivity extends BaseActivity implements CallBack, Choice {
 	public void setCustomPath(String path)
 	{
 		this.custom = path;
-	}
-	
-	public void setFreeSpace(TextView space)
-	{
-		this.freespace = space;
 	}
 	
 	public void setInstalled(boolean installed)

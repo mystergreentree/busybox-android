@@ -1,7 +1,5 @@
 package stericson.busybox.donate.jobs;
 
-import java.io.File;
-
 import stericson.busybox.donate.App;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
@@ -37,6 +35,17 @@ public class UnInstallAppletJob extends AsyncJob<Result>
 		Result result = new Result();
 		result.setSuccess(false);
 		
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception e)
+		{
+			result.setSuccess(false);
+			result.setError(activity.getString(R.string.shell_error));
+		    return result; 
+		}
+		
 		this.publishProgress("Preparing System...");
 
 		try
@@ -50,9 +59,8 @@ public class UnInstallAppletJob extends AsyncJob<Result>
 						"rm " + path + "/" + applet);
 				Shell.startRootShell().add(command).waitForFinish();
 								
-				File file = new File(path + "/" + applet);
-				if (!file.exists()) {
-					result.setSuccess(true);				
+				if (!RootTools.exists(path + "/" + applet)) {
+					result.setSuccess(true);
 				}
 			}
 		} 

@@ -9,7 +9,6 @@ public class Result
 	private String error;
 	private List<Item> itemList = new ArrayList<Item>();
 	private String message;
-	private float space = -1;
 	private String[] locations;
 	
 	public void setItemList(List<Item> itemList)
@@ -50,16 +49,6 @@ public class Result
 	public void setMessage(String message)
 	{
 		this.message = message;
-	}
-	
-	public float getSpace()
-	{
-		return this.space;
-	}
-	
-	public void setSpace(float f)
-	{
-		this.space = f;
 	}
 
 	public String[] getLocations()

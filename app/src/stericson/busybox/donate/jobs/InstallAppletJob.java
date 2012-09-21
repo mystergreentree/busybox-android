@@ -35,10 +35,19 @@ public class InstallAppletJob extends AsyncJob<Result>
 	@Override
     Result handle()
     {		
-		RootTools.useRoot = true;
-
 		Result result = new Result();
 		result.setSuccess(false);
+
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception e)
+		{
+			result.setSuccess(false);
+			result.setError(activity.getString(R.string.shell_error));
+		    return result; 
+		}
 		
 		this.publishProgress("Preparing System...");
 
@@ -113,14 +122,11 @@ public class InstallAppletJob extends AsyncJob<Result>
 			
 			Shell.startRootShell().add(command).waitForFinish();
 			
-			File file = new File("/system/xbin/" + applet);
-			if (file.exists()) {
-				result.setSuccess(true);				
+			if (RootTools.exists("/system/xbin/" + applet)) {
+				result.setSuccess(true);
 			}
-		} 
+		}
 		catch (Exception e) {}
-
-		RootTools.useRoot = false;
 
 	    return result; 
     }

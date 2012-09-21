@@ -6,19 +6,11 @@
     android:orientation="horizontal"
     android:gravity="center"
     android:layout_gravity="center">
-    
-
-	<ProgressBar 
-		android:layout_width="50dp"
-		android:layout_height="50dp"
-		android:indeterminateOnly="true"
-		android:indeterminateBehavior="cycle"
-		android:id="@+id/working"/>
     		
 	<stericson.busybox.donate.custom.FontableTextView 
 	    android:id="@+id/text"
+	    android:layout_marginTop="200px"
 	    android:layout_height="wrap_content"
-	    android:layout_width="wrap_content"
-	    android:text="Loading information..."/>
+	    android:layout_width="wrap_content"/>
 	
 </LinearLayout>

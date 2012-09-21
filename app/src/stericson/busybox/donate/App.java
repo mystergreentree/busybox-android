@@ -11,16 +11,29 @@ import android.view.View;
 public class App
 {
 	private static App instance = null;
+	
 	private List<Item> itemList;
+	private List<String> availableApplets;
+	
 	private View popupView;
+
 	private boolean toggled = false;
+	private boolean smartInstallLoaded = false;
 	private boolean smartInstall = false;
+	private boolean isInstalled = false;
+	private boolean choose;
+	private boolean installCustom = false;
+	private boolean stericson = false;
+	
 	private String path = "";
-	private String currentVersion = "/system/bin";
+	private String currentVersion = "";
 	private String version = Constants.versions[0];
-	private int versionPosition = 0;
-	private int pathPosition = 0;
 	private String found = "";
+	private String status = "";
+	
+	private float space = 0;
+	private float progress = 0;
+		
 	private AppletAdapter appletadapter;
 	private TuneAdapter tuneadapter;
 
@@ -31,6 +44,96 @@ public class App
 		if (instance == null)
 			instance = new App();
 		return instance;
+	}
+	
+	public List<String> getAvailableApplets()
+	{
+		return availableApplets;
+	}
+
+	public void setAvailableApplets(List<String> availableApplets)
+	{
+		this.availableApplets = availableApplets;
+	}
+
+	public float getProgress()
+	{
+		return progress;
+	}
+
+	public void setProgress(float progress)
+	{
+		this.progress = progress;
+	}
+
+	public String getStatus()
+	{
+		return status;
+	}
+
+	public void setStatus(String status)
+	{
+		this.status = status;
+	}
+
+	public float getSpace()
+	{
+		return space;
+	}
+
+	public void setSpace(float space)
+	{
+		this.space = space;
+	}
+
+	public boolean isSmartInstallLoaded()
+	{
+		return smartInstallLoaded;
+	}
+
+	public void setSmartInstallLoaded(boolean smartInstallLoaded)
+	{
+		this.smartInstallLoaded = smartInstallLoaded;
+	}
+
+	public boolean isInstallCustom()
+	{
+		return installCustom;
+	}
+
+	public void setInstallCustom(boolean installCustom)
+	{
+		this.installCustom = installCustom;
+	}
+
+	public boolean isStericson()
+	{
+		return stericson;
+	}
+
+	public void setStericson(boolean stericson)
+	{
+		this.stericson = stericson;
+	}
+
+	public boolean isChoose()
+	{
+		return choose;
+	}
+
+	public void setChoose(boolean choose_custom)
+	{
+		this.choose = choose_custom;
+	}
+
+	public boolean isInstalled()
+	{
+		return isInstalled;
+	}
+
+	public void setInstalled(boolean isInstalled)
+	{
+		this.isInstalled = isInstalled;
 	}
 
 	public AppletAdapter getAppletadapter()
@@ -61,26 +164,6 @@ public class App
 	public void setFound(String found)
 	{
 		this.found = found;
-	}
-
-	public int getVersionPosition()
-	{
-		return versionPosition;
-	}
-
-	public void setVersionPosition(int version_position)
-	{
-		this.versionPosition = version_position;
-	}
-
-	public int getPathPosition()
-	{
-		return pathPosition;
-	}
-
-	public void setPathPosition(int path_position)
-	{
-		this.pathPosition = path_position;
 	}
 
 	public String getCurrentVersion()
@@ -159,5 +242,19 @@ public class App
 	public View getPopupView()
 	{
 		return this.popupView;
+	}
+	
+	
+	public void updateVersion(int index)
+	{
+		try {
+			App.getInstance().getTuneadapter().setVersion_index(index);
+		} catch (Exception e) {}
+	}
+	
+	public void updatePath(int index) {
+		try {
+			App.getInstance().getTuneadapter().setPath_index(index);
+		} catch (Exception e) {}
 	}
 }

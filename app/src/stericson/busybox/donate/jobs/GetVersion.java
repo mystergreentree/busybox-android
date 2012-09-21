@@ -23,6 +23,17 @@ public class GetVersion extends AsyncJob<Result>
     {		
 		Result result = new Result();
 
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception e)
+		{
+			result.setSuccess(false);
+			result.setError(context.getString(R.string.shell_error));
+		    return result; 
+		}
+		
 		result.setMessage(RootTools.getBusyBoxVersion());
 				
 		App.getInstance().setCurrentVersion(result.getMessage());
