@@ -111,8 +111,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="3dp"
                     android:text="Clean Mode"
-                    android:textSize="13dp"
-                    android:enabled="false" />
+                    android:textSize="13dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -140,19 +139,6 @@
                     android:orientation="horizontal"
 					android:gravity="center" >
 
-                    <ProgressBar
-                        android:id="@+id/working"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:indeterminateBehavior="cycle"
-                        android:indeterminateOnly="true" />
-
-                    <stericson.busybox.donate.custom.FontableTextView
-                        android:id="@+id/text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/freespace"
-                        android:text="Loading information..." />
                 </LinearLayout>
             </LinearLayout>
         </RelativeLayout>

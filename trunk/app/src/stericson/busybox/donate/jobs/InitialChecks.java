@@ -1,6 +1,6 @@
 package stericson.busybox.donate.jobs;
 
-import stericson.busybox.donate.Common;
+import stericson.busybox.donate.App;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.domain.Result;
@@ -12,7 +12,7 @@ public class InitialChecks extends AsyncJob<Result>
 {
 	private MainActivity activity;
 	protected TextView view;
-	public static int Checks = 2;
+	public final static int Checks = 2;
 	
 	public InitialChecks(MainActivity activity)
 	{
@@ -25,23 +25,35 @@ public class InitialChecks extends AsyncJob<Result>
     {		
 		Result result = new Result();
 
-		RootTools.useRoot = true;
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception e)
+		{
+			result.setSuccess(false);
+			result.setError(context.getString(R.string.shell_error));
+		    return result; 
+		}
 		
 		if (!RootTools.isRootAvailable()) {
-			result.setMessage(activity.getString(R.string.noroot2));
+			result.setError(activity.getString(R.string.noroot2));
 		}
 		else
 		{
 			try {
 				if (!RootTools.isAccessGiven()) {
-					result.setMessage(activity.getString(R.string.noAccess));
+					result.setError(activity.getString(R.string.noAccess));
 				}
+				
+				App.getInstance().setSpace((float) (RootTools.getSpace("/system") / 1000));
+
 			} catch (Exception e) {				
-				result.setMessage(activity.getString(R.string.accessUndetermined));
+				result.setError(activity.getString(R.string.accessUndetermined));
 			}
 		}
 
-		Common.findBusyBoxLocations(false, false);
+		App.getInstance().setInstalled(RootTools.isBusyboxAvailable());
 
 		result.setSuccess(true);
 	    return result; 

@@ -1,13 +1,9 @@
 package stericson.busybox.donate.adapter;
 
-import stericson.busybox.donate.App;
-import stericson.busybox.donate.Constants;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.custom.FontableTextView;
 import stericson.busybox.donate.listeners.AppletInstallerLongClickListener;
-import stericson.busybox.donate.listeners.Location;
-import stericson.busybox.donate.listeners.Version;
 import android.content.Context;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
@@ -15,21 +11,13 @@ import android.support.v4.view.ViewPager;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ScrollView;
-import android.widget.Spinner;
-import android.widget.TextView;
 
-import com.stericson.RootTools.RootTools;
 import com.viewpagerindicator.TitleProvider;
  
 public class PageAdapter extends PagerAdapter implements TitleProvider
 {
-
-	private Spinner version;
-	private Spinner path;
-	private static FontableTextView foundAt;
 	
     private static String[] titles = new String[]
     {
@@ -52,15 +40,14 @@ public class PageAdapter extends PagerAdapter implements TitleProvider
     }
  
     @Override
-    public Object instantiateItem(final View pager, int position)
+    public Object instantiateItem(final View pager, final int position)
     {
     	View view = null;
 	    LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 	    
 		
-	    if (position == 0)
+	    switch (position)
 	    {
-			if (App.getInstance().getItemList() != null)
-			{
+	    	case 0:
 			    view = inflater.inflate(R.layout.generic_list, null);
 			    ((ViewPager) pager).addView(view);
 			    context.setListView((ListView) view.findViewById(R.id.list));
@@ -69,78 +56,28 @@ public class PageAdapter extends PagerAdapter implements TitleProvider
 			    listView.setAdapter(new AppletAdapter(context));
 			    listView.setOnItemLongClickListener(new AppletInstallerLongClickListener(context));
 			    listView.setCacheColorHint(0);
-	    	}
-			else
-			{
-				view = inflater.inflate(R.layout.progress, null);
-			    ((ViewPager) pager).addView(view);
-			    context.view1 = (TextView) view.findViewById(R.id.text);
-			}
-	    }
-	    else if (position == 1)
-	    {
-			if (App.getInstance().getItemList() != null)
-			{
+    		break;
+	    	
+	    	case 1:
 			    view = inflater.inflate(R.layout.generic_list, null);
 			    ((ViewPager) pager).addView(view);
 			    context.setListView((ListView) view.findViewById(R.id.list));
-				ListView listView = context.getListView();
+				ListView listView2 = context.getListView();
 	
-			    listView.setAdapter(new TuneAdapter(context));	
-			    listView.setCacheColorHint(0);
-	    	}
-			else
-			{	
-		    	view = inflater.inflate(R.layout.main_content, null);
+			    listView2.setAdapter(new TuneAdapter(context));	
+			    listView2.setCacheColorHint(0);
+    		break;
+	    		
+	    	case 2:
+			    view = new ScrollView(context);
+			    FontableTextView tv = new FontableTextView(context);
+			    ((ScrollView) view).addView(tv);
 			    ((ViewPager) pager).addView(view);
-		    	
-			    boolean installed = RootTools.isBusyboxAvailable();
 			    
-			    foundAt = (FontableTextView) view.findViewById(R.id.foundat);
-
-			    if (installed)
-			    {
-			    	foundAt.setText(" ?????");			    	
-			    }
-			    else
-			    {
-			    	foundAt.setText(context.getString(R.string.not) + " " + context.getString(R.string.installed));	
-			    }
-
-			    version = (Spinner) view.findViewById(R.id.busyboxversiontobe);
-			    ArrayAdapter<String> versionAdapter = new ArrayAdapter<String>(context, R.layout.simple_spinner_item, Constants.versions);
-		    	versionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		    	version.setOnItemSelectedListener(new Version());
-		    	version.setAdapter(versionAdapter);
-				
-				path = (Spinner) view.findViewById(R.id.path);
-				ArrayAdapter<String> locationAdapter = new ArrayAdapter<String>(context, R.layout.simple_spinner_item, Constants.locations);
-				locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-				path.setAdapter(locationAdapter);
-				path.setOnItemSelectedListener(new Location(context));
-				path.setSelection(App.getInstance().getPathPosition());
-
-		    	
-			    context.setFreeSpace((FontableTextView) view.findViewById(R.id.freespace));
-			    
-			    context.getFreeSpace().setText(" ?????");	
-			    
-			    context.view2 = (TextView) view.findViewById(R.id.text);
-			}
-		}
-	    else if (position == 2)
-	    {
-		    view = new ScrollView(context);
-		    FontableTextView tv = new FontableTextView(context);
-		    ((ScrollView) view).addView(tv);
-		    ((ViewPager) pager).addView(view);
-		    
-		    tv.setText(context.getString(R.string.about));
-		    Linkify.addLinks(tv, Linkify.ALL);
-	    }
-	    else if (position == 3)
-	    {
-	    	
+			    tv.setText(context.getString(R.string.about));
+			    Linkify.addLinks(tv, Linkify.ALL);
+	    		
+    		break;
 	    }
 	    
 	    return view;
@@ -174,13 +111,5 @@ public class PageAdapter extends PagerAdapter implements TitleProvider
 
 	public String getTitle(int position) {
 		return titles[ position ];
-	}
-	
-	public static void updateBusyboxInformation()
-	{
-		try
-		{
-			foundAt.setText(App.getInstance().getFound());
-		} catch (Exception ignore) {}
 	}
 }

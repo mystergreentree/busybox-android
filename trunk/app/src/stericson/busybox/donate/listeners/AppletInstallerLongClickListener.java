@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.Toast;
 
 public class AppletInstallerLongClickListener implements OnItemLongClickListener {
 
@@ -28,34 +29,51 @@ public class AppletInstallerLongClickListener implements OnItemLongClickListener
 		
 		if (item.getFound())
 		{
-			new AlertDialog.Builder(activity)
-		    .setTitle("Reinstall/Uninstall " + item.getApplet() + "?")
-		    .setMessage(activity.getString(R.string.installapplet))
-		    .setPositiveButton("Reinstall", new DialogInterface.OnClickListener() {
-		        public void onClick(DialogInterface dialog, int whichButton) {
-		        	
-		        	activity.stopGatherInformation();
-		        	
-		    		new InstallAppletJob(activity, item.getApplet(), position, adapter).execute();		    		
-		        }
-		    }).setNegativeButton("Uninstall", new DialogInterface.OnClickListener() {
-		        public void onClick(DialogInterface dialog, int whichButton) {
-		    		new UnInstallAppletJob(activity, item.getApplet(), item.getAppletPath(), position, adapter).execute();
-		        }}).show();
+			if (App.getInstance().getAvailableApplets().contains(item.getApplet())) {
+				new AlertDialog.Builder(activity)
+			    .setTitle("Reinstall/Uninstall " + item.getApplet() + "?")
+			    .setMessage(activity.getString(R.string.installapplet))
+			    .setPositiveButton("Reinstall", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {
+			        	
+			        	activity.stopGatherInformation();
+			        	
+			    		new InstallAppletJob(activity, item.getApplet(), position, adapter).execute();		    		
+			        }
+			    }).setNegativeButton("Uninstall", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {
+			    		new UnInstallAppletJob(activity, item.getApplet(), item.getAppletPath(), position, adapter).execute();
+			        }}).show();
+			} else {
+				new AlertDialog.Builder(activity)
+			    .setTitle("Uninstall " + item.getApplet() + "?")
+			    .setMessage(activity.getString(R.string.uninstallapplet))
+			    .setPositiveButton("Uninstall", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {
+			    		new UnInstallAppletJob(activity, item.getApplet(), item.getAppletPath(), position, adapter).execute();
+			        }
+			    })
+			    .show();
+			}
 		}
 		else
 		{
-			new AlertDialog.Builder(activity)
-		    .setTitle("Install " + item.getApplet() + "?")
-		    .setMessage(activity.getString(R.string.installapplet))
-		    .setPositiveButton("Install", new DialogInterface.OnClickListener() {
-		        public void onClick(DialogInterface dialog, int whichButton) {
-		        	
-		        	activity.stopGatherInformation();
-
-		    		new InstallAppletJob(activity, item.getApplet(), position, adapter).execute();
-		        }
-		    }).show();
+			if (App.getInstance().getAvailableApplets().contains(item.getApplet()))
+			{
+				new AlertDialog.Builder(activity)
+			    .setTitle("Install " + item.getApplet() + "?")
+			    .setMessage(activity.getString(R.string.installapplet))
+			    .setPositiveButton("Install", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {
+			        	
+			        	activity.stopGatherInformation();
+	
+			    		new InstallAppletJob(activity, item.getApplet(), position, adapter).execute();
+			        }
+			    }).show();
+			} else {
+				Toast.makeText(activity, "This applet is not available for install", Toast.LENGTH_LONG).show();
+			}
 		}
 		return false;
 	}

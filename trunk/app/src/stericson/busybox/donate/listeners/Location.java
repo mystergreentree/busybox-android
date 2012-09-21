@@ -1,20 +1,20 @@
 package stericson.busybox.donate.listeners;
 
-import java.io.File;
-
 import stericson.busybox.donate.App;
-import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.domain.Result;
 import stericson.busybox.donate.interfaces.CallBack;
 import stericson.busybox.donate.jobs.GetSpace;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.stericson.RootTools.RootTools;
 
 public class Location implements OnItemSelectedListener, CallBack {
 
@@ -25,9 +25,9 @@ public class Location implements OnItemSelectedListener, CallBack {
 		this.activity = activity;
 	}
 
-	public void onItemSelected(final AdapterView<?> arg0, View arg1,
-			int arg2, long arg3) {
-		if (arg2 == 2) 
+	public void onItemSelected(final AdapterView<?> adapter, View arg1,
+			int position, long arg3) {
+		if (position == 2) 
 		{
 			final EditText input = new EditText(activity);
 			new AlertDialog.Builder(activity)
@@ -36,8 +36,7 @@ public class Location implements OnItemSelectedListener, CallBack {
 		    .setView(input)
 		    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 		        public void onClick(DialogInterface dialog, int whichButton) {
-		        	File file = new File(input.getText().toString());
-		        	if (file.exists())
+		        	if (RootTools.exists(input.getText().toString()))
 		        	{
 		   			 activity.setCustomPath(input.getText().toString());
 		        		Toast.makeText(activity, "Custom install path set to " + activity.getCustomPath(), Toast.LENGTH_LONG).show();
@@ -45,32 +44,42 @@ public class Location implements OnItemSelectedListener, CallBack {
 		        	else
 		        	{
 		        		Toast.makeText(activity, "That path does not exist or is not valid!", Toast.LENGTH_LONG).show();
-		        		arg0.setSelection(0);
-		        		App.getInstance().setPath(arg0.getSelectedItem().toString());
-		        		App.getInstance().setPathPosition(0);
+
+		        		activity.updateList();
+		        		App.getInstance().setPath(adapter.getSelectedItem().toString());
 		        		activity.setCustomPath("");
 		        	}
 		        	
 				    new GetSpace(activity, activity.getCustomPath().equals("") ? "/system" : activity.getCustomPath(), Location.this).execute();
 
 		        }
-		    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		    })
+		    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 		        public void onClick(DialogInterface dialog, int whichButton) {
-		        	arg0.setSelection(0);
-	        		App.getInstance().setPath(arg0.getSelectedItem().toString());
-	        		App.getInstance().setPathPosition(0);
-					activity.setCustomPath("");
+	        		
+	        		activity.updateList();
+	        		App.getInstance().setPath(adapter.getSelectedItem().toString());
+	        		activity.setCustomPath("");
 					
 				    new GetSpace(activity, activity.getCustomPath().equals("") ? "/system" : activity.getCustomPath(), Location.this).execute();
 
 		        }
+		    })
+		    .setOnCancelListener(new OnCancelListener() {
+				@Override
+				public void onCancel(DialogInterface dialog)
+				{
+	        		activity.updateList();
+	        		App.getInstance().setPath(adapter.getSelectedItem().toString());
+				}
 		    }).show();
 		}
 		else
 		{
 			activity.setCustomPath("");
-			App.getInstance().setPathPosition(0);
-			App.getInstance().setPath(arg0.getSelectedItem().toString());
+			
+			App.getInstance().updatePath(adapter.getSelectedItemPosition());
+			App.getInstance().setPath(adapter.getSelectedItem().toString());
 		    new GetSpace(activity, activity.getCustomPath().equals("") ? "/system" : activity.getCustomPath(), Location.this).execute();
 		}		
 	}
@@ -78,7 +87,7 @@ public class Location implements OnItemSelectedListener, CallBack {
 	public void onNothingSelected(AdapterView<?> arg0) {}
 
 	public void jobCallBack(Result result, int id) {
-	    activity.getFreeSpace().setText(result.getSpace() != -1 ? activity.getString(R.string.amount) + " " + (activity.getCustomPath().equals("") ? "/system" : activity.getCustomPath()) + " " + result.getSpace() + "mb" : "");		
+		activity.updateList();
 	}
 
 }

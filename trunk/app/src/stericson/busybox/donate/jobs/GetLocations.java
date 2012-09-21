@@ -1,5 +1,7 @@
 package stericson.busybox.donate.jobs;
 
+import com.stericson.RootTools.RootTools;
+
 import stericson.busybox.donate.Common;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
@@ -22,6 +24,17 @@ public class GetLocations extends AsyncJob<Result>
     {		
 		Result result = new Result();
 
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception e)
+		{
+			result.setSuccess(false);
+			result.setError(context.getString(R.string.shell_error));
+		    return result; 
+		}
+		
 		result.setLocations(Common.findBusyBoxLocations(false, single));
 		
 		result.setSuccess(true);

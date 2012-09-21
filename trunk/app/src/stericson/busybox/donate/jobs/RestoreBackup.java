@@ -41,9 +41,18 @@ public class RestoreBackup extends AsyncJob<Result>
 		String inode = "";
 		String hardlink = "";
 		
-		RootTools.useRoot = true;
-
 		result.setSuccess(true);
+		
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception e)
+		{
+			result.setSuccess(false);
+			result.setError(activity.getString(R.string.shell_error));
+		    return result; 
+		}
 		
 		this.publishProgress("Preparing System...");
 				

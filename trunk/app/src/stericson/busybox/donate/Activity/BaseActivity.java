@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -104,7 +105,13 @@ public class BaseActivity extends Activity {
 	    }).setNegativeButton(negative, new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int whichButton) {
 	        	choice.choiceMade(false, id);
-	        }}).show();
+	        }}).setOnCancelListener(new OnCancelListener() {
+				@Override
+				public void onCancel(DialogInterface dialog)
+				{
+					choice.choiceCancelled(id);
+				}
+	        }).show();
 	}
 	
 	@Override

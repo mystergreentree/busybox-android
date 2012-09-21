@@ -1,6 +1,7 @@
 package stericson.busybox.donate;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,15 +12,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import android.app.Activity;
 import android.content.Context;
+import android.util.DisplayMetrics;
 
 import com.stericson.RootTools.Command;
+import com.stericson.RootTools.CommandCapture;
 import com.stericson.RootTools.RootTools;
 import com.stericson.RootTools.Shell;
 
 public class Common
 {
-
+	
 	/**
 	 * Used to extract certain assets we may need. Can be used by any class to
 	 * extract something. Right now this is tailored only for the initial check
@@ -40,15 +44,6 @@ public class Common
 		}
 		else if (file.contains("1.20.1")) {
 			realFile = "busybox1.20.1.png";
-		}
-		else if (file.contains("1.20.0")) {
-			realFile = "busybox20_0.png";
-		}
-		else if (file.contains("1.19.4")) {
-			realFile = "busybox19_4.png";
-		}
-		else {
-			realFile = "busybox19_3.png";
 		}
 
 		try {
@@ -123,11 +118,11 @@ public class Common
 			{
 				if (single_location.contains("system/bin"))
 				{
-					App.getInstance().setPathPosition(0);
+					App.getInstance().updatePath(0);
 				}
 				else if (single_location.contains("system/xbin"))
 				{
-					App.getInstance().setPathPosition(1);
+					App.getInstance().updatePath(1);
 				}
 
 				return new String[] { single_location };	
@@ -138,8 +133,7 @@ public class Common
 
 		try {
 			for (String paths : RootTools.getPath()) {
-				File file = new File(paths + "/busybox");
-				if (file.exists()) {
+				if (RootTools.exists(paths + "/busybox")) {
 					String symlink = RootTools.getSymlink(paths + "/busybox");
 					
 					if (includeSymlinks || symlink.equals(""))
@@ -164,14 +158,98 @@ public class Common
 		{
 			if (locations[0].contains("system/bin"))
 			{
-				App.getInstance().setPathPosition(0);
+				App.getInstance().updatePath(0);
 			}
 			else if (locations[0].contains("system/xbin"))
 			{
-				App.getInstance().setPathPosition(1);
+				App.getInstance().updatePath(1);
 			}
 		}
 
 		return locations;
+	}
+	
+	public static int getDIP(Activity context, int size) {
+		//How much room do we have?
+		DisplayMetrics dm = new DisplayMetrics();
+		context.getWindowManager().getDefaultDisplay().getMetrics(dm);
+		int dpi = dm.densityDpi;
+
+		return (int) (size * ((float) dpi / (float) 160));
+	}
+	
+	public static boolean setupBusybox(Context context, String binary, boolean isCustom)
+	{
+		String toolbox = "/data/local/toolbox";
+		String storagePath = context.getFilesDir().toString() + "/bb";
+		
+		new File(storagePath + "/busybox").delete();
+		
+		InputStream is = null;
+		OutputStream os = null;
+		byte[] buffer = new byte[2048];
+		int bytes_read = 0;
+		
+		String realFile = "";
+		
+		if (binary.contains("1.20.2")) {
+			realFile = "busybox1.20.2.png";
+		}
+		else if (binary.contains("1.20.1")) {
+			realFile = "busybox1.20.1.png";
+		}
+		
+		//Create the storagePath if it does not exist.
+		File tmp = new File(storagePath);
+		if (!tmp.exists())
+			tmp.mkdir();
+				
+		try
+		{
+			if (isCustom)
+				is = new FileInputStream(new File(binary));		
+			else
+				is = context.getResources().getAssets().open(realFile);
+
+			os = new FileOutputStream(new File(storagePath + "/busybox"));
+			
+			while ((bytes_read = is.read(buffer)) != -1)
+			{
+				os.write(buffer, 0, bytes_read);
+			}
+			
+		}
+		catch (Exception ignore) {}
+		finally
+		{
+			try
+			{
+				is.close();
+			}
+			catch (Exception ignore) {}
+			
+			try
+			{
+				os.close();
+			}
+			catch (Exception ignore) {}
+		}
+
+		
+		if (RootTools.exists(storagePath + "/busybox"))
+		{
+			CommandCapture command = new CommandCapture(0, 
+					toolbox + " chmod 0755 " + storagePath + "/busybox",
+					"/system/bin/toolbox chmod 0755 " + storagePath + "/busybox",
+					"chmod 0755 " + storagePath + "/busybox");
+	
+			try {
+				RootTools.getShell(true).add(command).waitForFinish();
+			} catch (Exception e) {}
+
+			return true;
+		}
+		else
+			return false;
 	}
 }

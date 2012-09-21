@@ -1,5 +1,6 @@
 package stericson.busybox.donate.jobs;
 
+import stericson.busybox.donate.App;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
 import stericson.busybox.donate.domain.Result;
@@ -24,7 +25,18 @@ public class GetSpace extends AsyncJob<Result>
     {				
 		Result result = new Result();
 
-		result.setSpace((float) (RootTools.getSpace(location) / 1000));
+		try
+		{
+			RootTools.getShell(true);
+		}
+		catch (Exception e)
+		{
+			result.setSuccess(false);
+			result.setError(context.getString(R.string.shell_error));
+		    return result; 
+		}
+		
+		App.getInstance().setSpace((float) (RootTools.getSpace(location) / 1000));
 				
 		result.setSuccess(true);
 	    return result; 

@@ -3,7 +3,6 @@ package stericson.busybox.donate.listeners;
 import stericson.busybox.donate.App;
 import stericson.busybox.donate.R;
 import stericson.busybox.donate.Activity.MainActivity;
-import stericson.busybox.donate.adapter.PageAdapter;
 import stericson.busybox.donate.domain.Result;
 import stericson.busybox.donate.interfaces.CallBack;
 import stericson.busybox.donate.jobs.GetLocations;
@@ -49,7 +48,13 @@ public class PageChange implements OnPageChangeListener, CallBack {
 			}
 			
 			context.updateList();
-			PageAdapter.updateBusyboxInformation();
+			
+			try
+			{
+				App.getInstance().updateVersion(0);
+				
+				context.updateList();
+			} catch (Exception ignore) {}
 		}
 		else if (id == 2)
 		{
@@ -57,7 +62,7 @@ public class PageChange implements OnPageChangeListener, CallBack {
 		}
 		else if (id == 3)
 		{
-			context.getFreeSpace().setText(result.getSpace() != -1 ? context.getString(R.string.amount) + " " + (context.getCustomPath().equals("") ? "/system" : context.getCustomPath()) + " " + result.getSpace() + "mb" : "");		
+			context.updateList();
 		}
 	}
 }
