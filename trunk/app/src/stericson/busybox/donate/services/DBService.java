@@ -153,7 +153,10 @@ public class DBService
 			{
 				cur.moveToFirst();
 
-				if (cur.getInt(0) == Constants.appletsString.length)
+				int count = cur.getInt(0);
+				int num_applets = Constants.appletsString.length;
+				
+				if (count >= num_applets)
 				{
 					return true;
 				}
