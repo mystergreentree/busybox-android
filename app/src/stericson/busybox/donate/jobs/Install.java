@@ -85,6 +85,16 @@ public class Install
 			if (RootTools.remount("/system", "rw"))
 			{
 
+				try {
+					command = new CommandCapture(0,
+						"cat /dev/null > /system/etc/resolv.conf",
+						"echo \"nameserver 8.8.4.4\" >> /system/etc/resolv.conf",
+						"echo \"nameserver 8.8.8.8\" >> /system/etc/resolv.conf",
+						"chmod 4755 /system/etc/resolv.conf");
+					Shell.startRootShell().add(command).waitForFinish();
+				} 
+				catch (Exception ignore) {}
+
 				//ALWAYS run this, I don't care if it does exist...I want to always make sure it is there.
 				Common.extractResources(activity, "toolbox", sdPath + "/toolbox-stericson");
 				
