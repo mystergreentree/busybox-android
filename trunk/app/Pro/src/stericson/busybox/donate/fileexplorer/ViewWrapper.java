@@ -4,10 +4,10 @@ import android.view.View;
 import android.widget.CheckBox;
 
 public class ViewWrapper {
-	View base;
-	CheckBox cb = null;
+    View base;
+    CheckBox cb = null;
 
-	ViewWrapper(View base) {
-		this.base = base;
-	}
+    ViewWrapper(View base) {
+        this.base = base;
+    }
 }

@@ -1,47 +1,43 @@
 package stericson.busybox.jobs;
 
-import stericson.busybox.App;
+import android.app.Activity;
+
 import stericson.busybox.R;
-import stericson.busybox.Activity.MainActivity;
-import stericson.busybox.domain.Result;
-import android.widget.TextView;
+import stericson.busybox.interfaces.JobCallback;
+import stericson.busybox.jobs.containers.JobResult;
+import stericson.busybox.jobs.tasks.InstallTask;
 
-public class InstallJob extends AsyncJob<Result>
-{
-	private MainActivity activity;
-	private String version;
-	private String path;
-	
-	public InstallJob(MainActivity activity, String version, String path)
-	{
-		super(activity, R.string.installing, true, false);
-		this.activity = activity;
-		this.version = version;
-		this.path = path;
-		
-	}
+public class InstallJob extends AsyncJob {
+    public static final int INSTALL_JOB = 1253;
 
-	@Override
-    Result handle()
-    {		
-		return new Install().install(activity, this, path, version, false, false, false);
+    private String path;
+    private String version;
+    private JobCallback cb;
+
+    public InstallJob(Activity activity, JobCallback cb, String path, String version) {
+        super(activity, R.string.installing, true, false);
+        this.path = path;
+        this.cb = cb;
+        this.version = version;
     }
 
-	public void publishCurrentProgress(Object... values)
-	{
-		this.publishProgress(values);
-	}
-	
-	@Override
+    @Override
+    JobResult handle() {
+        return new InstallTask().execute(this, path, version, false, false);
+    }
+
+    public void publishCurrentProgress(Object... values) {
+        this.publishProgress(values);
+    }
+
+    @Override
     protected void onProgressUpdate(Object... values) {
-		super.onProgressUpdate(values);
-		TextView header = (TextView) App.getInstance().getPopupView().findViewById(R.id.header);
-		header.setText(this.activity.getString(R.string.installing) + " " + values[0]);
+        super.onProgressUpdate(values);
+        cb.jobProgress(values[0], INSTALL_JOB);
     }
-    
-	@Override
-    void callback(Result result)
-    {
-	    activity.installDone(result);
+
+    @Override
+    void callback(JobResult result) {
+        cb.jobFinished(result, INSTALL_JOB);
     }
 }

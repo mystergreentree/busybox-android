@@ -8,21 +8,21 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-public class FontableCheckBox extends CheckBox
-{
+public class FontableCheckBox extends CheckBox {
 
     public FontableCheckBox(Context context) {
         super(context);
-        
+
         Typeface tf = null;
         try {
-			tf = Typeface.createFromAsset(context.getAssets(), "fonts/default.ttf");
-    		if (this instanceof TextView) {
+            tf = Typeface.createFromAsset(context.getAssets(), "fonts/default.ttf");
+            if (this instanceof TextView) {
                 ((TextView) ((View) this)).setTypeface(tf);
             } else {
                 ((Button) ((View) this)).setTypeface(tf);
             }
-        } catch (Exception ignore) {}    
+        } catch (Exception ignore) {
+        }
 
     }
 
@@ -30,26 +30,28 @@ public class FontableCheckBox extends CheckBox
         super(context, attrs);
         Typeface tf = null;
         try {
-			tf = Typeface.createFromAsset(context.getAssets(), "fonts/default.ttf");
-    		if (this instanceof TextView) {
+            tf = Typeface.createFromAsset(context.getAssets(), "fonts/default.ttf");
+            if (this instanceof TextView) {
                 ((TextView) ((View) this)).setTypeface(tf);
             } else {
                 ((Button) ((View) this)).setTypeface(tf);
             }
-        } catch (Exception ignore) {}    
+        } catch (Exception ignore) {
+        }
     }
 
     public FontableCheckBox(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        
+
         Typeface tf = null;
         try {
-			tf = Typeface.createFromAsset(context.getAssets(), "fonts/default.ttf");
-    		if (this instanceof TextView) {
+            tf = Typeface.createFromAsset(context.getAssets(), "fonts/default.ttf");
+            if (this instanceof TextView) {
                 ((TextView) ((View) this)).setTypeface(tf);
             } else {
                 ((Button) ((View) this)).setTypeface(tf);
             }
-        } catch (Exception ignore) {}    
+        } catch (Exception ignore) {
+        }
     }
 }
