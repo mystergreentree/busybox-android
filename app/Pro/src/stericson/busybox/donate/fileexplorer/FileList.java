@@ -25,169 +25,170 @@ import android.widget.TextView;
 
 public class FileList extends ListActivity {
 
-	public static final String SELECTED_INTENT_KEY = "selected";
-	private int[] colors = new int[] { 0xff303030, 0xff404040 };
+    public static final String SELECTED_INTENT_KEY = "selected";
+    private int[] colors = new int[]{0xff303030, 0xff404040};
 
-	private String currentPath = "/";
-	private String basePath = "/";
-	private TextView currentPathView;
-	private ImageButton backButton;
+    private String currentPath = "/";
+    private String basePath = "/";
+    private TextView currentPathView;
+    private ImageButton backButton;
 
-	/** Called when the activity is first created. */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.explorer_filelist);
+    /**
+     * Called when the activity is first created.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.explorer_filelist);
 
-		currentPathView = (TextView) findViewById(R.id.explorer_filelist_currentpath);
-		backButton = (ImageButton) findViewById(R.id.back_button);
+        currentPathView = (TextView) findViewById(R.id.explorer_filelist_currentpath);
+        backButton = (ImageButton) findViewById(R.id.back_button);
 
-		backButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				goBack();
-			}
-		});
-		registerForContextMenu(getListView());
-		loadCurrentPathFiles();
-	}
-
-    @Override 
-    public void onConfigurationChanged(Configuration newConfig) { 
-    super.onConfigurationChanged(newConfig); 
-    // We do nothing here. We're only handling this to keep orientation 
-    // or keyboard hiding from causing the activity to restart. 
+        backButton.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                goBack();
+            }
+        });
+        registerForContextMenu(getListView());
+        loadCurrentPathFiles();
     }
-    
-	ArrayList<FileEntry> list = new ArrayList<FileEntry>();
 
-	private void loadCurrentPathFiles() {
-		currentPathView.setText(currentPath);
-		list.clear();
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // We do nothing here. We're only handling this to keep orientation
+        // or keyboard hiding from causing the activity to restart.
+    }
 
-		File current = new File(currentPath);
-		String[] filesInPath = current.list(new FilenameFilter() {
-			public boolean accept(File dir, String filename) {
+    ArrayList<FileEntry> list = new ArrayList<FileEntry>();
+
+    private void loadCurrentPathFiles() {
+        currentPathView.setText(currentPath);
+        list.clear();
+
+        File current = new File(currentPath);
+        String[] filesInPath = current.list(new FilenameFilter() {
+            public boolean accept(File dir, String filename) {
 
 //				if (new File(dir, filename).isDirectory())
 //					return true;
 
-				return true;
-			}
-		});
-		if (filesInPath == null) {
-			// we prevent a crash here if filesInPath returns null
-			// because of an inaccessible directory.
-		} else {
-			for (int i = 0; i < filesInPath.length; i++) {
-				// we add the files to our arraylist
-				FileEntry fe = new FileEntry(current.getAbsolutePath() + "/"
-						+ filesInPath[i]);
+                return true;
+            }
+        });
+        if (filesInPath == null) {
+            // we prevent a crash here if filesInPath returns null
+            // because of an inaccessible directory.
+        } else {
+            for (int i = 0; i < filesInPath.length; i++) {
+                // we add the files to our arraylist
+                FileEntry fe = new FileEntry(current.getAbsolutePath() + "/"
+                        + filesInPath[i]);
 
-				list.add(fe);
-			}
-		}
+                list.add(fe);
+            }
+        }
 
-		Collections.sort(list);
+        Collections.sort(list);
 
-		setListAdapter(new FileEntryAdapter(this,
-				R.layout.explorer_filelist_row, list));
-	}
+        setListAdapter(new FileEntryAdapter(this,
+                R.layout.explorer_filelist_row, list));
+    }
 
-	protected void onActivityResult(int request, int result, Intent intent) {
-		loadCurrentPathFiles();
-	}
-	
-	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
+    protected void onActivityResult(int request, int result, Intent intent) {
+        loadCurrentPathFiles();
+    }
 
-		FileEntry selected = list.get(position);
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
 
-		if (selected.file.isDirectory()) {
-			
-			currentPath = selected.file.getAbsolutePath();
+        FileEntry selected = list.get(position);
 
-			loadCurrentPathFiles();
-		} else {
-			Intent result = new Intent();
-			result.putExtra(SELECTED_INTENT_KEY, selected.filePath);
-			setResult(RESULT_OK, result);
-			finish();
-		}
-	}
+        if (selected.file.isDirectory()) {
 
-	private void goBack() {
-		if (!(currentPath.equals(basePath) || currentPath.equals("/"))) {
-			File current = new File(currentPath);
-			currentPath = current.getParent();
-			loadCurrentPathFiles();
-		} else {
-			setResult(RESULT_CANCELED);
-			finish();
-		}
-	}
+            currentPath = selected.file.getAbsolutePath();
 
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			goBack();
-			return true;
-		}
-		return super.onKeyDown(keyCode, event);
-	}
+            loadCurrentPathFiles();
+        } else {
+            Intent result = new Intent();
+            result.putExtra(SELECTED_INTENT_KEY, selected.filePath);
+            setResult(RESULT_OK, result);
+            finish();
+        }
+    }
 
-	public class FileEntryAdapter extends ArrayAdapter<FileEntry> {
+    private void goBack() {
+        if (!(currentPath.equals(basePath) || currentPath.equals("/"))) {
+            File current = new File(currentPath);
+            currentPath = current.getParent();
+            loadCurrentPathFiles();
+        } else {
+            setResult(RESULT_CANCELED);
+            finish();
+        }
+    }
 
-		private ArrayList<FileEntry> items;
-		private Context context;
-		int index = 0;
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            goBack();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
-		public FileEntryAdapter(Context context, int textViewResourceId,
-				ArrayList<FileEntry> items) {
-			super(context, textViewResourceId, items);
-			this.items = items;
-			this.context = context;
-		}
+    public class FileEntryAdapter extends ArrayAdapter<FileEntry> {
 
-		@Override
-		public View getView(final int position, View convertView,
-				ViewGroup parent) {
-			View v = convertView;
-			ViewWrapper wrapper;
-			final FileEntry o = items.get(position);
+        private ArrayList<FileEntry> items;
+        private Context context;
+        int index = 0;
 
-			if (v == null) {
-				LayoutInflater vi = (LayoutInflater) context
-						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				v = vi.inflate(R.layout.explorer_filelist_row, null);
-				wrapper = new ViewWrapper(v);
-				v.setTag(wrapper);
-			} else {
-				wrapper = (ViewWrapper) v.getTag();
-			}
-			if (o != null) {
-				TextView titulo = (TextView) v.findViewById(R.id.itemtitle);
-				ImageView icon = (ImageView) v.findViewById(R.id.itemicon);
-				LinearLayout container = (LinearLayout) v.findViewById(R.id.container);
+        public FileEntryAdapter(Context context, int textViewResourceId,
+                                ArrayList<FileEntry> items) {
+            super(context, textViewResourceId, items);
+            this.items = items;
+            this.context = context;
+        }
 
-				String value = o.file.getName();
+        @Override
+        public View getView(final int position, View convertView,
+                            ViewGroup parent) {
+            View v = convertView;
+            ViewWrapper wrapper;
+            final FileEntry o = items.get(position);
 
-				if (titulo != null)
-					titulo.setText(value);
+            if (v == null) {
+                LayoutInflater vi = (LayoutInflater) context
+                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = vi.inflate(R.layout.explorer_filelist_row, null);
+                wrapper = new ViewWrapper(v);
+                v.setTag(wrapper);
+            } else {
+                wrapper = (ViewWrapper) v.getTag();
+            }
+            if (o != null) {
+                TextView titulo = (TextView) v.findViewById(R.id.itemtitle);
+                ImageView icon = (ImageView) v.findViewById(R.id.itemicon);
+                LinearLayout container = (LinearLayout) v.findViewById(R.id.container);
 
-				if (o.file.isDirectory())
-					icon.setImageResource(R.drawable.folder);
-				else
-					icon.setImageResource(R.drawable.file);
-				
-				if(position % 2 != 0) {
-					container.setBackgroundColor(colors[position % 2]);
-				}
-				else {
-					container.setBackgroundColor(colors[position % 2]);
-				}
-			}
-			return (v);
-		}
+                String value = o.file.getName();
 
-	}
+                if (titulo != null)
+                    titulo.setText(value);
+
+                if (o.file.isDirectory())
+                    icon.setImageResource(R.drawable.folder);
+                else
+                    icon.setImageResource(R.drawable.file);
+
+                if (position % 2 != 0) {
+                    container.setBackgroundColor(colors[position % 2]);
+                } else {
+                    container.setBackgroundColor(colors[position % 2]);
+                }
+            }
+            return (v);
+        }
+
+    }
 }

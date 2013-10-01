@@ -1,47 +1,44 @@
 package stericson.busybox.donate.jobs;
 
-import stericson.busybox.donate.App;
+import android.app.Activity;
+
 import stericson.busybox.donate.R;
-import stericson.busybox.donate.Activity.MainActivity;
-import stericson.busybox.donate.domain.Result;
-import android.widget.TextView;
+import stericson.busybox.donate.interfaces.JobCallback;
+import stericson.busybox.donate.jobs.containers.JobResult;
+import stericson.busybox.donate.jobs.tasks.InstallTask;
 
-public class InstallJob extends AsyncJob<Result>
-{
-	private MainActivity activity;
-	private String version;
-	private String path;
-	
-	public InstallJob(MainActivity activity, String version, String path)
-	{
-		super(activity, R.string.installing, true, false);
-		this.activity = activity;
-		this.version = version;
-		this.path = path;
-		
-	}
+public class InstallJob extends AsyncJob {
+    public static final int INSTALL_JOB = 1253;
 
-	@Override
-    Result handle()
-    {		
-		return new Install().install(activity, this, path, version, false, activity.getClean(), false);
+    private String path;
+    private JobCallback cb;
+    private boolean clean;
+
+    public InstallJob(Activity activity, JobCallback cb, String path, boolean clean) {
+        super(activity, R.string.installing, true, false);
+        this.path = path;
+        this.cb = cb;
+        this.clean = clean;
     }
 
-	public void publishCurrentProgress(Object... values)
-	{
-		this.publishProgress(values);
-	}
-	
-	@Override
+    @Override
+    JobResult handle() {
+        return new InstallTask().execute(this, context, path, false, clean, false);
+    }
+
+    public void publishCurrentProgress(Object... values) {
+        this.publishProgress(values);
+    }
+
+    @Override
     protected void onProgressUpdate(Object... values) {
-		super.onProgressUpdate(values);
-		TextView header = (TextView) App.getInstance().getPopupView().findViewById(R.id.header);
-		header.setText(this.activity.getString(R.string.installing) + " " + values[0]);
+        super.onProgressUpdate(values);
+        cb.jobProgress(values[0], INSTALL_JOB);
     }
-    
-	@Override
-    void callback(Result result)
-    {
-	    activity.installDone(result);
+
+    @Override
+    void callback(JobResult result) {
+
+        cb.jobFinished(result, INSTALL_JOB);
     }
 }

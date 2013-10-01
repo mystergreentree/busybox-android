@@ -17,13 +17,13 @@
 ** limitations under the License.
 */
 -->
-<stericson.busybox.donate.custom.FontableTextView 
-    xmlns:android="http://schemas.android.com/apk/res/android" 
-    xmlns:app="http://schemas.android.com/apk/res/stericson.busybox.donate"
-    android:id="@android:id/text1"
-    style="?android:attr/spinnerItemStyle"
-    android:singleLine="true"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:ellipsize="marquee"
-    android:textSize="15dp" />
+<stericson.busybox.donate.custom.FontableTextView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res/stericson.busybox.donate"
+        android:id="@android:id/text1"
+        style="?android:attr/spinnerItemStyle"
+        android:singleLine="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:textSize="15dp"/>

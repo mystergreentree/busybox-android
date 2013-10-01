@@ -1,46 +1,35 @@
 package stericson.busybox.donate.jobs;
 
-import stericson.busybox.donate.App;
 import stericson.busybox.donate.R;
-import stericson.busybox.donate.Activity.MainActivity;
-import stericson.busybox.donate.domain.Result;
-import android.widget.TextView;
+import stericson.busybox.donate.interfaces.JobCallback;
+import stericson.busybox.donate.jobs.containers.JobResult;
+import stericson.busybox.donate.jobs.tasks.PrepareBinaryTask;
+import android.app.Activity;
 
-public class PrepareBinaryJob extends AsyncJob<Result>
-{
-	private MainActivity activity;
-	private String binaryPath;
-	public final static int PREPARE_BINARY = 5;
+public class PrepareBinaryJob extends AsyncJob {
+    public final static int PREPARE_BINARY_JOB = 752216;
 
-	
-	public PrepareBinaryJob(MainActivity activity, String binaryPath)
-	{
-		super(activity, R.string.preparing, true, false);
-		this.activity = activity;
-		this.binaryPath = binaryPath;
-	}
+    private String binaryPath;
+    private JobCallback cb;
 
-	@Override
-    Result handle()
-    {		
-		return new PrepareBinary().prepareBinary(activity, binaryPath);
+    public PrepareBinaryJob(Activity activity, JobCallback cb, String binaryPath) {
+        super(activity, R.string.preparing, true, false);
+        this.cb = cb;
+        this.binaryPath = binaryPath;
     }
 
-	public void publishCurrentProgress(Object... values)
-	{
-		this.publishProgress(values);
-	}
-	
-	@Override
+    @Override
+    JobResult handle() {
+        return PrepareBinaryTask.execute(this, binaryPath);
+    }
+
+    @Override
     protected void onProgressUpdate(Object... values) {
-		super.onProgressUpdate(values);
-		TextView header = (TextView) App.getInstance().getPopupView().findViewById(R.id.header);
-		header.setText(this.activity.getString(R.string.installing) + " " + values[0]);
+        super.onProgressUpdate(values);
     }
-    
-	@Override
-    void callback(Result result)
-    {
-	    activity.jobCallBack(result, PREPARE_BINARY);
+
+    @Override
+    void callback(JobResult result) {
+        cb.jobFinished(result, PREPARE_BINARY_JOB);
     }
 }

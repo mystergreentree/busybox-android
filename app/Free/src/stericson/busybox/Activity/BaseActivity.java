@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import stericson.busybox.Common;
 import stericson.busybox.R;
+import stericson.busybox.Support.Common;
 import stericson.busybox.interfaces.Choice;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -28,187 +28,187 @@ import com.stericson.RootTools.RootTools;
 
 public class BaseActivity extends Activity {
 
-	public PopupWindow pw;
-	public boolean endApplication;
+    public PopupWindow pw;
+    public boolean endApplication;
 
-	public Typeface tf;
+    public Typeface tf;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
-		try {
-			tf = Typeface.createFromAsset(getAssets(), "fonts/DJGROSS.ttf");
-		} catch (Exception e) {};
-	}
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-    @Override 
-    public void onConfigurationChanged(Configuration newConfig) { 
-    super.onConfigurationChanged(newConfig); 
-    // We do nothing here. We're only handling this to keep orientation 
-    // or keyboard hiding from causing the WebView activity to restart. 
+        RootTools.debugMode = true;
+        RootTools.default_Command_Timeout = 5000;
+
+        try {
+            tf = Typeface.createFromAsset(getAssets(), "fonts/DJGROSS.ttf");
+        } catch (Exception e) {
+        }
     }
-    
-	public void initiatePopupWindow(String text, boolean endApplication,
-			Activity context) {
-		
-		if (pw != null && pw.isShowing())
-			pw.dismiss();
-		
-		if (!context.isFinishing())
-		{
-			this.endApplication = endApplication;
-	
-			LayoutInflater inflater = (LayoutInflater) context
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			// Inflate the view from a predefined XML layout
-			View layout = inflater.inflate(R.layout.popupwindow, null);
-			pw = new PopupWindow(layout, LayoutParams.MATCH_PARENT,
-					LayoutParams.MATCH_PARENT);
-	
-			context.findViewById(R.id.pop).post(new Runnable() {
-				public void run() {
-					pw.showAtLocation(findViewById(R.id.pop), Gravity.CENTER, 0, 0);
-				}
-			});
-	
-			TextView header = (TextView) layout.findViewById(R.id.header_main);
-			header.setTypeface(tf);
-	
-			TextView textView = (TextView) layout.findViewById(R.id.content);
-			textView.setText(text);
-		}
-	}
 
-	public void makeChoice(final Choice choice, final int id, int title, int content, int positive, int negative)
-	{
-		new AlertDialog.Builder(this)
-	    .setTitle(title)
-	    .setMessage(content)
-	    .setPositiveButton(positive, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int whichButton) {
-	        	choice.choiceMade(true, id);
-	        }
-	    }).setNegativeButton(negative, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int whichButton) {
-	        	choice.choiceMade(false, id);
-	        }}).show();
-	}
-	
-	public String[] configureSpinner() {
-		
-		String[] busyboxLocation;
-		
-		busyboxLocation = Common.findBusyBoxLocations(false, false);
-		
-		Set<String> tmpSet = new HashSet<String>();
-		if (busyboxLocation != null) {
-			for (String locations : busyboxLocation) {
-				tmpSet.add(locations);
-			}
-			tmpSet.add("/system/bin/");
-			tmpSet.add("/system/xbin/");
-			
-			busyboxLocation = new String[tmpSet.size() + 1];
-			int count = 0;
-			for (String locations : tmpSet) {
-				busyboxLocation[count] = locations;
-				count++;
-			}
-			
-			busyboxLocation[tmpSet.size()] = getString(R.string.custompath);
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // We do nothing here. We're only handling this to keep orientation
+        // or keyboard hiding from causing the WebView activity to restart.
+    }
 
-			RootTools.log("Count " + busyboxLocation.length);
+    public void initiatePopupWindow(String text, boolean endApplication,
+                                    Activity context) {
 
-		} else {
-			busyboxLocation = new String[3];
-			busyboxLocation[0] = "/system/bin/";
-			busyboxLocation[1] = "/system/xbin/";
-			busyboxLocation[2] = "Custom Path";
-		}
-		
-		return busyboxLocation;
-	}
-	
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+        if (pw != null && pw.isShowing())
+            pw.dismiss();
 
-			if (pw != null && pw.isShowing()) {
-				close(new View(this));
-			} else {
-				finish();
-				randomAnimation();
-			}
+        if (!context.isFinishing()) {
+            this.endApplication = endApplication;
 
-			return true;
-		}
+            LayoutInflater inflater = (LayoutInflater) context
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            // Inflate the view from a predefined XML layout
+            View layout = inflater.inflate(R.layout.popupwindow, null);
+            pw = new PopupWindow(layout, LayoutParams.MATCH_PARENT,
+                    LayoutParams.MATCH_PARENT);
 
-		return super.onKeyDown(keyCode, event);
-	}
+            context.findViewById(R.id.pop).post(new Runnable() {
+                public void run() {
+                    pw.showAtLocation(findViewById(R.id.pop), Gravity.CENTER, 0, 0);
+                }
+            });
 
-	public void randomAnimation() {
-		Random random = new Random();
-		switch (random.nextInt(3)) {
-		case 0:
-			overridePendingTransition(this, R.anim.enter_scalein,
-					R.anim.exit_slideout);
-			break;
-		case 1:
-			overridePendingTransition(this, R.anim.enter_dropin,
-					R.anim.exit_dropout);
-			break;
-		case 2:
-			overridePendingTransition(this, R.anim.enter_slidein,
-					R.anim.exit_slideout);
-			break;
-		}
-	}
+            TextView header = (TextView) layout.findViewById(R.id.header_main);
+            header.setTypeface(tf);
 
-	public void close(View v) {
-		pw.dismiss();
-		if (endApplication) {
-			finish();
-			randomAnimation();
-		}
-	}
+            TextView textView = (TextView) layout.findViewById(R.id.content);
+            textView.setText(text);
+        }
+    }
 
-	private static Method overridePendingTransition;
+    public void makeChoice(final Choice choice, final int id, int title, int content, int positive, int negative) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(content)
+                .setPositiveButton(positive, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        choice.choiceMade(true, id);
+                    }
+                }).setNegativeButton(negative, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                choice.choiceMade(false, id);
+            }
+        }).show();
+    }
 
-	static {
-		try {
-			overridePendingTransition = Activity.class
-					.getMethod(
-							"overridePendingTransition", new Class[] { Integer.TYPE, Integer.TYPE }); //$NON-NLS-1$
-		} catch (NoSuchMethodException e) {
-			overridePendingTransition = null;
-		}
-	}
+    public String[] configureSpinner() {
 
-	/**
-	 * Calls Activity.overridePendingTransition if the method is available
-	 * (>=Android 2.0)
-	 * 
-	 * @param activity
-	 *            the activity that launches another activity
-	 * @param animEnter
-	 *            the entering animation
-	 * @param animExit
-	 *            the exiting animation
-	 */
-	public static void overridePendingTransition(Activity activity,
-			int animEnter, int animExit) {
-		if (overridePendingTransition != null) {
-			try {
-				overridePendingTransition.invoke(activity, animEnter, animExit);
-			} catch (Exception e) {
-				// do nothing
-			}
-		}
-	}
-	
-	public void debug(View v)
-	{
-	    RootTools.debugMode = !RootTools.debugMode;
-	    Toast.makeText(this, "Debug is " + RootTools.debugMode, Toast.LENGTH_LONG).show();
-	}
+        String[] busyboxLocation;
+
+        busyboxLocation = Common.findBusyBoxLocations(false, false);
+
+        Set<String> tmpSet = new HashSet<String>();
+        if (busyboxLocation != null) {
+            for (String locations : busyboxLocation) {
+                tmpSet.add(locations);
+            }
+            tmpSet.add("/system/bin/");
+            tmpSet.add("/system/xbin/");
+
+            busyboxLocation = new String[tmpSet.size() + 1];
+            int count = 0;
+            for (String locations : tmpSet) {
+                busyboxLocation[count] = locations;
+                count++;
+            }
+
+            busyboxLocation[tmpSet.size()] = getString(R.string.custompath);
+
+            RootTools.log("Count " + busyboxLocation.length);
+
+        } else {
+            busyboxLocation = new String[3];
+            busyboxLocation[0] = "/system/bin/";
+            busyboxLocation[1] = "/system/xbin/";
+            busyboxLocation[2] = "Custom Path";
+        }
+
+        return busyboxLocation;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+
+            if (pw != null && pw.isShowing()) {
+                close(new View(this));
+            } else {
+                finish();
+                randomAnimation();
+            }
+
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void randomAnimation() {
+        Random random = new Random();
+        switch (random.nextInt(3)) {
+            case 0:
+                overridePendingTransition(this, R.anim.enter_scalein,
+                        R.anim.exit_slideout);
+                break;
+            case 1:
+                overridePendingTransition(this, R.anim.enter_dropin,
+                        R.anim.exit_dropout);
+                break;
+            case 2:
+                overridePendingTransition(this, R.anim.enter_slidein,
+                        R.anim.exit_slideout);
+                break;
+        }
+    }
+
+    public void close(View v) {
+        pw.dismiss();
+        if (endApplication) {
+            finish();
+            randomAnimation();
+        }
+    }
+
+    private static Method overridePendingTransition;
+
+    static {
+        try {
+            overridePendingTransition = Activity.class
+                    .getMethod(
+                            "overridePendingTransition", new Class[]{Integer.TYPE, Integer.TYPE}); //$NON-NLS-1$
+        } catch (NoSuchMethodException e) {
+            overridePendingTransition = null;
+        }
+    }
+
+    /**
+     * Calls Activity.overridePendingTransition if the method is available
+     * (>=Android 2.0)
+     *
+     * @param activity  the activity that launches another activity
+     * @param animEnter the entering animation
+     * @param animExit  the exiting animation
+     */
+    public static void overridePendingTransition(Activity activity,
+                                                 int animEnter, int animExit) {
+        if (overridePendingTransition != null) {
+            try {
+                overridePendingTransition.invoke(activity, animEnter, animExit);
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
+    }
+
+    public void debug(View v) {
+        RootTools.debugMode = !RootTools.debugMode;
+        Toast.makeText(this, "Debug is " + RootTools.debugMode, Toast.LENGTH_LONG).show();
+    }
 }
