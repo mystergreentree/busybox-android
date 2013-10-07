@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger>
+
+    <dataSet config="main" >
+        <source path="/Users/Stericson/pStuff/Busybox/application/Busybox/src/main/assets" />
+    </dataSet>
+    <dataSet config="free" >
+        <source path="/Users/Stericson/pStuff/Busybox/application/Busybox/src/free/assets" />
+    </dataSet>
+    <dataSet config="debug" >
+        <source path="/Users/Stericson/pStuff/Busybox/application/Busybox/src/debug/assets" />
+    </dataSet>
+
+</merger>
